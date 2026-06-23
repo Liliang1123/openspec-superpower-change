@@ -83,3 +83,4 @@ Minimum compact evidence:
 - Read `references/fablecodex-caveman-review.md` before discussing FableCodex or caveman-style output.
 - Read `references/obsidian-knowledge-base.md` when asked to turn findings into long-term notes.
 - Read `references/self-evolution-rule.md` before modifying this skill itself.
+- Read `references/sync-checklist.md` before syncing local and open-source skill copies.
