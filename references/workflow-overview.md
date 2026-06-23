@@ -12,11 +12,13 @@ It decides:
 - which Step Evidence Gate level applies;
 - when the agent is allowed to claim completion.
 
-## High-level workflow
+## Main flow
 
 ```text
 read local instructions
 -> inspect existing specs, changes, docs, and context when relevant
+-> read required references from the Reference Read Matrix
+-> complete Gate 0 before state-changing action
 -> classify request mode
 -> clarify domain language when needed
 -> create or update OpenSpec proposal when required
@@ -27,19 +29,33 @@ read local instructions
 -> report changed files, evidence, risks, and next steps
 ```
 
-## Request mode matrix
+## Orchestration model
 
-| Mode | Allows file changes | OpenSpec | Superpowers plan | Evidence gate | Completion rule |
-|---|---:|---:|---:|---:|---|
-| Review-only | No | No automatic proposal | No | No implementation gate | State findings and whether implementation would need OpenSpec |
-| Discovery First | Docs/glossary only when explicitly allowed | Maybe after clarification | No | Discovery evidence | Continue to proposal decision once terms are stable |
-| OpenSpec proposal | Proposal artifacts only | Yes | No implementation plan yet | Proposal validation | Stop for approval |
-| Approved implementation | Yes | Already approved | Yes unless explicitly skipped | Compact/full | Formal verification required |
-| Direct Change | Yes | No | Only if non-trivial/multi-step | Scoped/compact | Targeted verification required |
+```text
+grill-with-docs when domain language or boundaries are unclear
+  -> OpenSpec when the change needs an approved contract
+  -> Superpowers when approved work needs planning, implementation, and verification
+```
+
+OpenSpec defines the approved change contract. Superpowers defines the execution discipline. `grill-with-docs` sharpens language and decision context before the contract is written.
+
+## Artifact boundaries
+
+For OpenSpec-backed work:
+
+- OpenSpec artifacts: `openspec/changes/<change-id>/proposal.md`, `tasks.md`, optional `design.md`, and spec deltas.
+- Superpowers implementation plan: `docs/superpowers/plans/YYYY-MM-DD-<change-id>.md`.
+- Step Evidence Gate signoff notes for gated implementation steps.
+- Verification evidence before completion.
+
+Optional discovery artifacts:
+
+- `CONTEXT.md` glossary entries.
+- `docs/adr/NNNN-slug.md` only for decisions that are hard to reverse, surprising without context, and based on a real trade-off.
 
 ## Governance boundaries
 
-- OpenSpec defines the contract.
-- Superpowers defines execution discipline.
-- Step Evidence Gate defines progress evidence.
-- `openspec-superpower-change` defines routing, ordering, and gate enforcement.
+- OpenSpec defines what changes, why it changes, and what acceptance scenarios must hold.
+- Superpowers defines how approved work is planned, implemented, tested, debugged, reviewed, and verified.
+- Step Evidence Gate defines progress evidence and signoff conditions.
+- This skill defines routing, ordering, and gate enforcement.

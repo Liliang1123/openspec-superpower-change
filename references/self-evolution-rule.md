@@ -30,6 +30,28 @@ Enter Self-Evolution mode when the user asks to:
 
 If unsure whether a self-evolution change is Minor or Major, treat it as Major.
 
+
+## Major Self-Evolution Review Draft Flow
+
+For Major self-evolution, the first deliverable must be a review draft plan, not direct edits. The plan must be stored in the active project or skill review workspace and include:
+
+- observed failures;
+- desired behavior;
+- files to change;
+- exact rule snippets to add or change;
+- validation and forward-test plan;
+- rollback path.
+
+Implementation starts only after user approval or an explicitly approved change contract. Approval must be recorded in the response before editing.
+
+Before editing, create a timestamped backup of the runtime skill. When validating local runtime changes, prefer running validation with the target project environment, for example:
+
+```bash
+conda run -n qagent-3.12.11 python3 /Users/elvis/.codex/skills/.system/skill-creator/scripts/quick_validate.py /Users/elvis/.codex/skills/openspec-superpower-change
+```
+
+Forward-tests must run in a temporary copy or isolated fixture when practical. Do not mutate `/Users/elvis/.codex/skills/` during forward-tests except for the explicitly approved target skill edit.
+
 ## Required workflow
 
 1. State that Self-Evolution mode is active.

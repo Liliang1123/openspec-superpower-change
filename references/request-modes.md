@@ -1,0 +1,63 @@
+# Request Modes
+
+## Review-only
+
+Use when the user asks to review, assess, critique, summarize, improve, or generate a prompt without explicitly asking for implementation.
+
+Rules:
+
+- Do not create or modify files.
+- Do not start an OpenSpec proposal automatically.
+- Do not run implementation workflow automatically.
+- State whether the described work would require OpenSpec if later implemented.
+- Identify unclear terms, missing approval gates, test gaps, artifact gaps, and execution risks.
+- If asked to stress-test a plan, use the `grill-with-docs` questioning style but keep it read-only unless the user explicitly asks to update docs.
+- Switching from review-only to implementation requires explicit user confirmation.
+
+## Discovery First
+
+Use before OpenSpec when:
+
+- domain terms are vague, overloaded, or conflict with existing docs/code;
+- boundaries between contexts, actors, states, or lifecycle stages are unclear;
+- the change has non-obvious edge cases or scenario-dependent behavior;
+- a design decision may deserve an ADR;
+- the user asks to grill, stress-test, clarify, or align on language before writing the proposal.
+
+When active:
+
+1. Read `CONTEXT-MAP.md`, `CONTEXT.md`, and relevant `docs/adr/` files when present.
+2. If `CONTEXT.md` does not exist, create it before asking discovery questions by extracting established domain terms from architecture docs and code.
+3. Ask one question at a time and include a recommended answer.
+4. If code or docs can answer the question, inspect them instead of asking.
+5. Update `CONTEXT.md` when a domain term is resolved or clarified.
+6. Keep `CONTEXT.md` a glossary only: no implementation details, specs, task lists, or scratch notes.
+7. Offer an ADR only when the decision is hard to reverse, surprising without context, and based on a real trade-off.
+8. Treat pre-approval ADRs as `proposed` or ADR candidates when the decision depends on OpenSpec approval.
+9. Continue into the OpenSpec decision once language and boundaries are stable enough.
+
+If `grill-with-docs` is not installed, continue with these Phase 0 rules and tell the user the dedicated skill is unavailable.
+
+## OpenSpec proposal
+
+Use when the request requires an approved change contract. Create proposal artifacts and stop for approval before implementation.
+
+## Approved implementation
+
+Use only after the user approves an OpenSpec-backed proposal. Create a Superpowers implementation plan before implementation unless the user explicitly says to skip it.
+
+## Direct Change
+
+Use when OpenSpec is not required: localized bug fix restoring intended behavior, low-impact config tweak, formatting, comment update, typo fix, docs-only change without contract impact, or test-only change for existing behavior.
+
+Direct Change is forbidden when the change touches any of:
+
+- agent runtime control flow;
+- tool registration, visibility, schema, validation, or fallback;
+- cache key, cache bypass, result reuse, or persistence semantics;
+- request routing, skill routing, or workflow lifecycle;
+- public/user-visible/operator-visible behavior;
+- security or sandbox boundary;
+- cross-module behavior or multi-file runtime changes.
+
+These cases must enter Discovery First or OpenSpec proposal unless an approved existing contract explicitly covers the behavior. A localized bugfix label is not enough to bypass this exclusion.

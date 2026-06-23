@@ -1,77 +1,136 @@
-# Step Evidence Gate
+# Step Evidence Gate Reference
 
-Use Step Evidence Gate to prevent unsupported implementation claims, scope drift, and hidden contract mismatches.
+Use this reference when the main skill requires the full 12-part output template
+for a high-risk, multi-step, or contract-changing implementation step.
 
-## Compact template
+Full evidence requirements do not always require verbose output. Report compactly
+when all evidence is complete and the step is not high-risk, contract-changing,
+or explicitly requested in full.
 
-Use this by default for direct changes and moderate-risk steps:
+
+## Compact Gate Templates
+
+Use these compact gates unless the full 12-part template is required by risk, contract impact, or user request.
+
+### Gate 0: Before action
+
+- Mode:
+- References read:
+- OpenSpec decision:
+- Required Superpowers sub-skills:
+- Risk level:
+- User confirmation required: yes/no
+- Next action:
+
+Gate 0 must happen before file modification, state-changing command, implementation, or proposal artifact creation.
+
+### Gate 1: Before implementation
+
+- Evidence gathered:
+- Root cause candidate:
+- Files allowed to change:
+- Tests to add/run:
+- Rollback path:
+- Stop condition:
+
+### Gate 2: Before completion claim
+
+- Changed files:
+- Verification commands:
+- Results:
+- Residual risks:
+- Out-of-scope changes checked:
+- Completion claim allowed: yes/no
+
+## Interrupted / Dirty Diff Audit
+
+When the user interrupts due to process concerns, stop implementation and run a diff audit before continuing.
+
+Audit output must include:
+
+1. Files changed before interruption.
+2. Which changes are validated, unvalidated, or partial.
+3. Which changes should be reverted, kept, or parked.
+4. Confirmation that no further implementation will happen until the user confirms.
+
+Do not use the audit to justify continuing implementation without user confirmation.
+
+## Full Output Template
 
 1. Step goal
-2. Code facts with `path:line` evidence when code is involved
-3. Positive checks
-4. Negative search
-5. Gap and root cause
-6. Change scope
-7. Verification commands and results
-8. Self-review, residual risk, and next-step permission
-
-## Full template
-
-Use this for high-risk, multi-step, or contract-changing implementation steps.
-
-1. Step goal
-   - State the current task, boundary, risk, review entry point, and acceptance criteria.
+   - State the current task, boundary, risk, review entry point, and acceptance
+     criteria.
 2. Code fact table
    - Every fact must include `path:line` evidence.
-   - Cover entry point, call chain, behavior location, test coverage, missing verification, docs/type/schema/spec contract location, and old error path or residual.
+   - Cover entry point, call chain, behavior location, test coverage, missing
+     verification, docs/type/schema/spec contract location, and old error path
+     or residual.
 3. Positive check result
-   - Identify existing correct capability, partial implementation, test foundation, and docs/type/schema/spec synchronization points.
+   - Identify existing correct capability, partial implementation, test
+     foundation, and docs/type/schema/spec synchronization points.
 4. Negative search result
-   - Search old fields, old API paths, old schema shapes, old docs examples, old test assertions, fallback or compatibility logic, deprecated aliases, old error messages, and outdated public claims.
+   - Search for old fields, old API paths, old schema shapes, old docs examples,
+     old test assertions, fallback or compatibility logic, deprecated aliases,
+     old error messages, and outdated public claims.
+   - For compact evidence on localized direct fixes, narrow this to residuals
+     directly related to the defect, touched contract, affected field, path,
+     error message, or changed behavior.
 5. Root cause and gap analysis
-   - Explain why the current state does not satisfy the step and locate the root cause layer.
+   - Explain why the current state does not satisfy the step.
+   - Locate the root cause layer: runtime, schema, API, frontend, docs, tests,
+     spec, or contract mismatch.
+   - Explain why existing tests did not block the issue when relevant.
 6. Implementation strategy
-   - State the minimal change and why it does not hide root cause with fallback behavior unless the approved contract requires it.
+   - State the minimal change needed.
+   - Explain why the fix does not hide the root cause with `try`/`except`,
+     fallback, or compatibility behavior unless the approved contract requires it.
 7. Step change scope
    - List allowed files and actual files changed.
+   - Record unrelated findings as residual risk unless they block this step.
 8. Verification commands and tests
-   - List official tests, type checks, build, and OpenSpec validation when applicable.
+   - List official commands for tests, type checks, build, and
+     `openspec validate <change-id> --strict` when applicable.
+   - Mark host-machine ad hoc commands as supporting evidence only.
 9. Verification result
    - State pass/fail for each command.
+   - Include failures and warnings, and whether warnings affect the conclusion.
 10. Self-review result
-    - Check scope drift, fake contracts, test-only claims, docs-only claims, and cross-artifact consistency.
+    - Answer whether the step had scope drift, fake contracts, test-only claims
+      without runtime change, docs-only claims without runtime change, tests used
+      as the only evidence, or inconsistency across code facts, tests, docs,
+      types, and specs.
 11. Residual risk
-    - List unresolved non-blocking issues.
+    - List unresolved issues that do not block the current step.
+    - If a residual issue blocks the step, stop and fix it instead of signing off.
 12. Next-step permission
-    - Write `yes` only when all signoff conditions are satisfied.
+    - Write `yes` only when all signoff conditions below are satisfied.
+    - Otherwise write `no` and continue working on the current step.
 
-## Signoff conditions
+## Signoff Conditions
 
-Formal verification means the repository's official tests, type checks, builds, OpenSpec validation, or documented local equivalents that apply to the current change.
+Only allow the next step when all conditions hold:
 
+- Code fact table was produced.
+- Every fact has `path:line` evidence.
+- Positive checks are complete.
+- Negative searches are complete.
+- Formal verification has run with the repository's required commands.
+- There are no out-of-scope edits.
+- No fake contract was introduced.
+- No old error path or outdated public claim remains in the step scope.
+- The current step's acceptance criteria pass.
 
-Allow the next step only when:
+## Conditional Runtime/Test Rule
 
-- code facts were produced when code is involved;
-- every fact has evidence;
-- positive checks are complete;
-- negative searches are complete;
-- formal verification has run;
-- there are no out-of-scope edits;
-- no fake contract was introduced;
-- no old error path or outdated public claim remains in scope;
-- acceptance criteria pass.
-
-## Root-cause integrity rule
-
-Do not use `try`/`except`, fallback, or compatibility logic to hide the root cause unless the approved contract explicitly requires it.
-
-## Change-type rule
+Use precise change-type rules:
 
 - Runtime behavior change: runtime code and a regression test are required.
-- API/schema/contract change: synchronize implementation, schema/type definitions, docs/specs, and tests.
-- Docs-only, test-only, or proposal-only: do not claim runtime behavior changed.
-- Refactor-only: rely on existing behavior tests only when they cover the touched behavior.
+- API/schema/contract change: synchronize implementation, schema or type
+  definitions, docs or specs, and tests that cover the contract.
+- Docs-only, test-only, or proposal-only step: do not claim runtime behavior
+  changed.
+- Refactor-only step: new tests are optional only when existing behavior tests
+  are run and are sufficient for the touched behavior.
 
 ## High-Risk Full Evidence Example: API/Schema Migration
 
