@@ -23,6 +23,7 @@ Use this skill as the default entry gate for development change work. It is not 
 3. **OpenSpec proposal**: use for new capabilities, public behavior changes, architecture, API/schema, data lifecycle, security, migration, deployment, recovery, operator-visible behavior, or skill workflow changes.
 4. **Approved implementation**: use after an OpenSpec proposal has been approved. Create a Superpowers implementation plan before code changes unless explicitly skipped by the user.
 5. **Direct Change**: use for localized bug fixes restoring intended behavior, typo/comment/formatting updates, docs-only changes without contract impact, tests for existing behavior, or small low-risk config changes.
+6. **Self-Evolution**: improve this skill itself only with backup, scope classification, validation, and forward-test; use OpenSpec for major workflow or gate changes.
 
 ## Change paths
 
@@ -47,6 +48,7 @@ Use for high-risk or contract-changing work. Create OpenSpec proposal artifacts,
 - Do not move to the next gated step until the current evidence gate passes.
 - Do not claim completion without verification evidence.
 - Do not compress official artifacts so much that evidence, risks, or decisions become unauditable.
+- Self-evolution cannot weaken approval gates, evidence gates, verification requirements, or user-control boundaries.
 
 ## OpenSpec triggers
 
@@ -80,3 +82,4 @@ Minimum compact evidence:
 - Read `references/sdd-comparison.md` when explaining why this is not ordinary SDD.
 - Read `references/fablecodex-caveman-review.md` before discussing FableCodex or caveman-style output.
 - Read `references/obsidian-knowledge-base.md` when asked to turn findings into long-term notes.
+- Read `references/self-evolution-rule.md` before modifying this skill itself.
