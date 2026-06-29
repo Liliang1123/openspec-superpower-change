@@ -8,6 +8,8 @@ This skill may improve its own instructions, references, templates, examples, an
 
 Self-evolution must never weaken approval gates, evidence gates, verification requirements, or user-control boundaries. Any change that affects request routing, OpenSpec decision rules, Superpowers execution rules, Step Evidence Gate signoff conditions, or completion-claim rules requires an approved change contract before implementation.
 
+For global personal skill edits, short-circuit only unrelated business-project OpenSpec recursion. Do not short-circuit user approval, structured backup, self-evolution gate, RED/GREEN forward-test, validation, rollback, or final reporting. If the skill source itself is being changed as an OpenSpec-managed product repository, require OpenSpec approval.
+
 ## Triggers
 
 Enter Self-Evolution mode when the user asks to:

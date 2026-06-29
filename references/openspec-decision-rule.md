@@ -32,3 +32,9 @@ Skip OpenSpec only for:
 If unsure and the change may affect architecture, public behavior, system boundaries, data lifecycle, security, performance, deployment, recovery, or operator-visible behavior, choose OpenSpec.
 
 If unsure but the change appears localized and only restores already-intended behavior, treats comments/formatting/typos, adds tests for existing behavior, or changes small configuration without user-visible, operator-visible, security, deployment, recovery, or performance-semantics impact, proceed as a direct change and document the assumption.
+
+## Global personal skill self-evolution
+
+For global personal skill edits under a personal runtime skill directory, short-circuit only unrelated business-project OpenSpec recursion. Do not short-circuit user approval, structured backup, self-evolution gate, RED/GREEN forward-test, validation, rollback, or final reporting.
+
+If the skill source itself is being changed inside an OpenSpec-managed product or open-source repository, and the change will be published as that repository's product behavior, require OpenSpec approval.

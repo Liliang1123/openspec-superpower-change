@@ -12,6 +12,12 @@ or explicitly requested in full.
 
 Use these compact gates unless the full 12-part template is required by risk, contract impact, or user request.
 
+Evidence profiles:
+
+- `compact`: focused verification for low-risk direct, docs, formatting, config, or existing-behavior test work.
+- `standard`: run `step_critical` for each batch; review reruns critical plus one independent behavior check; run `final_critical` once at the final batch unless later code changes invalidate it.
+- `strict`: security, auth, public API/schema, persistence, migration, deployment, rollback, deletion/recovery, or cross-tenant work; real acceptance cannot be replaced by mocks or unit tests.
+
 ### Gate 0: Before action
 
 - Mode:
@@ -217,4 +223,3 @@ A change renames a public API field from `token` to `accessToken`, migrates stor
 12. **Next-step permission**
     - `yes` only if all signoff conditions pass.
     - `no` if any old field, outdated public claim, missing migration verification, or failed formal command remains.
-
