@@ -1,161 +1,170 @@
 # openspec-superpower-change
 
-[English](README.md) | [简体中文](README_zh.md)
+[English](README.md) | [简体中文](README_cn.md)
 
-`openspec-superpower-change` is a project-level AI development change gate and governance orchestrator. It is not a generic Software Design Document (SDD) workflow, not an OpenSpec alias, and not a Superpowers wrapper. 
+`openspec-superpower-change` is a Codex skill that acts as the change-control entry gate for AI-assisted engineering work. It connects project-local rules, OpenSpec change contracts, Superpowers execution practices, and evidence-based verification into one repeatable workflow.
 
-Instead, it orchestrates domain clarification (`grill-with-docs`), change contract approval (`OpenSpec`), execution discipline (`Superpowers`), and progressive evidence validation (`Step Evidence Gate`) into a single, cohesive governance framework.
+The goal is simple: an AI agent should not move from a request directly to implementation when the work may affect runtime behavior, public contracts, security, persistence, workflow routing, or operator-visible behavior.
 
----
+## Highlights
 
-## Why this is not ordinary SDD
+- Classifies every request before state-changing work begins.
+- Separates review-only, discovery, proposal, approved implementation, direct change, and self-evolution modes.
+- Decides when OpenSpec is required and blocks implementation before approval.
+- Routes approved work into Superpowers planning, TDD, debugging, and verification flows.
+- Requires Step Evidence Gate output before progress or completion claims.
+- Provides controlled self-evolution and local/open-source skill synchronization rules.
 
-Ordinary Software Design Document (SDD) workflows typically follow a linear, un-gated process:
+## Why It Exists
 
-```text
-spec -> plan -> tasks -> implement
-```
+AI coding agents can be effective, but in production-grade repositories they commonly fail in ways that are preventable:
 
-`openspec-superpower-change` enforces active classification, risk assessment, and continuous verification:
+- implementing before reading local project rules;
+- treating a task checklist as an approved contract;
+- using test-only evidence for runtime behavior claims;
+- bypassing OpenSpec for API, persistence, security, or workflow changes;
+- weakening governance rules while editing the governance skill itself;
+- losing track of approval status across external-agent handoffs.
 
-```text
-read local rules
--> classify request mode (Gate 0)
--> clarify domain language (when needed)
--> require OpenSpec approval (when contract/risk changes)
--> use Superpowers after approval (planning, TDD, debugging, implementation, verification)
--> keep evidence at every gated step (Step Evidence Gate)
--> claim completion only after verification evidence exists
-```
+This skill turns those risks into explicit gates, references, and validation checkpoints.
 
-This structural governance ensures AI-assisted development remains predictable, auditable, and safe—especially when working with complex, production-grade legacy codebases.
+## How It Fits
 
----
-
-## Relationship matrix
-
-| Capability | Core Responsibility | When to Invoke |
+| Capability | Responsibility | Owned By |
 |---|---|---|
-| **OpenSpec** | Defines *what* changes, *why* it changes, and the *acceptance contract*. | When API, schema, persistence, security, workflow, or public behavior changes. |
-| **Superpowers** | Defines *how* approved work is planned, implemented, tested, debugged, reviewed, and verified. | For any non-trivial implementation phase. |
-| **grill-with-docs** | Clarifies domain terms, boundaries, actors, lifecycle states, and design decisions. | Prior to writing specifications when domain logic is ambiguous. |
-| **openspec-superpower-change** | Orchestrates all capabilities, defines request modes, and validates evidence gates. | Default entry point for all AI-assisted engineering tasks. |
+| Local project rules | Repository-specific constraints, review artifacts, handoff rules, commit conventions | Project `AGENTS.md` / local docs |
+| OpenSpec | Change contract, requirements, scenarios, approval state | `openspec/` |
+| Superpowers | Implementation planning, TDD, debugging, verification discipline | Superpowers skills |
+| Step Evidence Gate | Evidence required before advancing or claiming completion | `references/step-evidence-gate.md` |
+| openspec-superpower-change | Routing, risk classification, approval gate, self-evolution boundary | This skill |
 
----
-
-## Gate 0: Mandatory Entry Gate
-
-Before modifying any project files, running state-altering commands, or proposing specifications, the agent **MUST** complete **Gate 0**. 
-
-Gate 0 requires stating:
-1. **Active request mode**: Review-only / Discovery First / OpenSpec proposal / Approved implementation / Direct Change / Self-Evolution.
-2. **References read**: Which files from `references/` were read and why they are sufficient.
-3. **OpenSpec necessity**: Whether OpenSpec is required (`yes` / `no` / `uncertain`) with a brief reason.
-4. **Superpowers required**: Mapping of required execution disciplines (e.g., TDD, writing-plans, systematic-debugging).
-5. **Risk and confirmation**: Risk level assessment and whether user approval is required before state transition.
-
-*Direct Change is strictly forbidden if the task touches runtime tools, security boundaries, sandboxes, cache strategies, or core workflows.*
-
----
-
-## Change Paths
-
-This framework defines three distinct paths based on risk and scope:
-
-### 1. Lightweight Path
-* **Usage**: Low-risk direct changes (typos, comments, formatting, non-contract documentation, tests for existing behavior, localized bug fixes).
-* **Gated Requirements**: Local instructions check, targeted verification, and a concise final report. No OpenSpec artifacts required.
-
-### 2. Standard Path
-* **Usage**: Multi-step bug fixes, refactoring without behavior modification, or implementing already-approved contracts.
-* **Gated Requirements**: Superpowers implementation plan (for multi-step work), TDD/debugging, Step Evidence Gate checkpoints, and verification-before-completion.
-
-### 3. Strict Path
-* **Usage**: Contract-changing or high-risk work (new capabilities, architectural/lifecycle modifications, API/schema shifts, security boundaries, skill workflow changes).
-* **Gated Requirements**: Domain clarification (`grill-with-docs`), OpenSpec proposal & approval, Superpowers implementation plan, Step Evidence Gate validation, and formal verification evidence.
-
----
-
-## Non-Negotiables
-
-* **No Bypasses**: `CONTEXT.md` cannot replace OpenSpec proposals. `tasks.md` cannot replace a Superpowers plan. Superpowers planning cannot bypass OpenSpec approval.
-* **Gate Sequence**: You cannot move to the next phase until the current Step Evidence Gate passes.
-* **Evidence-Based**: No completion claims can be made without explicit verification evidence.
-* **Evolution Guardrails**: Self-evolution of this skill cannot weaken validation gates, approval requirements, or user-control boundaries.
-
----
-
-## Recommended Project Layout
-
-For physical workspace projects governed by this skill, the following layout is recommended:
+## Core Workflow
 
 ```text
-├── README.md               # Project overview & language switch
-├── README_zh.md            # Chinese translation of README
-├── SKILL.md                # Main skill instructions (Gate 0, read matrix)
-├── openspec/               # OpenSpec approved contracts
-│   └── changes/
-│       └── <change-id>/    # proposal.md, tasks.md, design.md
-├── docs/
-│   └── superpowers/
-│       └── plans/          # YYYY-MM-DD-<change-id>.md
-├── references/             # Detailed guide modules & rules
-└── scripts/                # Verification & helper utilities
+Read local rules
+-> Gate 0 request classification
+-> Discovery First if terms or boundaries are unclear
+-> OpenSpec proposal if contracts or high-risk behavior change
+-> stop until approval
+-> Superpowers plan for approved implementation
+-> TDD / debugging / implementation discipline
+-> Step Evidence Gate verification
+-> completion only after evidence exists
 ```
 
----
+## Request Modes
 
-## Reference Guide
+| Mode | Use When | File Changes? |
+|---|---|---:|
+| Review-only | The user asks to review, assess, critique, summarize, or generate a prompt. | No |
+| Discovery First | Terms, actors, lifecycle, or boundaries are unclear. | Usually glossary / context only |
+| OpenSpec proposal | New capability, behavior contract, architecture, security, persistence, API, or workflow changes are needed. | Proposal artifacts only |
+| Approved implementation | An OpenSpec-backed proposal has been explicitly approved. | Yes, after plan |
+| Direct Change | Low-risk restoration, typo, formatting, docs-only, config-only, or tests for existing behavior. | Yes, scoped |
+| Self-Evolution | This skill, its references, validators, examples, or sync rules are being changed. | Yes, gated |
 
-The `references/` directory contains modular rules and checklists. Under Gate 0, agents must refer to specific modules based on task type:
+## Gate 0
 
-* **[workflow-overview.md](file:///Users/elvis/file/develop/opensource/openspec-superpower-change/references/workflow-overview.md)**: Overall workflow routing, responsibilities, artifacts, and governance boundaries. It orchestrates when to proposal, design, implement, and verify.
-* **[local-instruction-checkpoint.md](file:///Users/elvis/file/develop/opensource/openspec-superpower-change/references/local-instruction-checkpoint.md)**: Rules for reading project-specific instructions (e.g., `AGENTS.md` and `CONTEXT.md` checks) before beginning any changes.
-* **[request-modes.md](file:///Users/elvis/file/develop/opensource/openspec-superpower-change/references/request-modes.md)**: Detailed criteria and constraints for the 6 request modes (Review-only, Discovery First, OpenSpec proposal, Approved implementation, Direct Change, Self-Evolution).
-* **[openspec-decision-rule.md](file:///Users/elvis/file/develop/opensource/openspec-superpower-change/references/openspec-decision-rule.md)**: Concrete rules for when an OpenSpec change is mandatory (e.g., API/schema shifts, security boundaries, skill workflow changes) and when it can be skipped.
-* **[proposal-workflow.md](file:///Users/elvis/file/develop/opensource/openspec-superpower-change/references/proposal-workflow.md)**: Step-by-step pipeline for drafting, structuring, validating (via `openspec validate`), and seeking approval for OpenSpec change contracts.
-* **[approved-implementation-workflow.md](file:///Users/elvis/file/develop/opensource/openspec-superpower-change/references/approved-implementation-workflow.md)**: Guidelines for writing Superpowers execution plans (`docs/superpowers/plans/`) containing small, testable steps with explicit verification.
-* **[direct-change-rule.md](file:///Users/elvis/file/develop/opensource/openspec-superpower-change/references/direct-change-rule.md)**: Workflow and validation rules for low-risk, non-contract modifications like formatting, localized bug fixes, and comment updates.
-* **[step-evidence-gate.md](file:///Users/elvis/file/develop/opensource/openspec-superpower-change/references/step-evidence-gate.md)**: Compact and full templates for the Step Evidence Gate. Defines mandatory evidence requirements at each execution checkpoint.
-* **[response-patterns.md](file:///Users/elvis/file/develop/opensource/openspec-superpower-change/references/response-patterns.md)**: Standardized response structures and templates for each request mode to ensure consistent and informative communication.
-* **[sdd-comparison.md](file:///Users/elvis/file/develop/opensource/openspec-superpower-change/references/sdd-comparison.md)**: High-level comparison between ordinary Software Design Document (SDD) flows and the `openspec-superpower-change` gated governance model.
-* **[self-evolution-rule.md](file:///Users/elvis/file/develop/opensource/openspec-superpower-change/references/self-evolution-rule.md)**: Strict rules for modifying this skill itself. Requires backwards compatibility, regression testing, and prevents weakening validation gates.
-* **[sync-checklist.md](file:///Users/elvis/file/develop/opensource/openspec-superpower-change/references/sync-checklist.md)**: A synchronization checklist for merging patches, minor updates, or major updates between local runtime copies and open-source repositories.
-* **[fablecodex-caveman-review.md](file:///Users/elvis/file/develop/opensource/openspec-superpower-change/references/fablecodex-caveman-review.md)**: Boundaries between the core gate model, optional FableCodex checklists, and caveman-style output compression.
-* **[obsidian-knowledge-base.md](file:///Users/elvis/file/develop/opensource/openspec-superpower-change/references/obsidian-knowledge-base.md)**: Standards for organizing long-term technical knowledge, task templates, and post-mortems in an Obsidian knowledge sink.
+Before editing files, running state-changing commands, creating proposal artifacts, or starting implementation, the agent must state:
 
----
+1. active request mode;
+2. references read and why they are sufficient;
+3. whether OpenSpec is required;
+4. required Superpowers sub-skills;
+5. risk level, next action, and whether user confirmation is required.
 
-## Risk Model & FableCodex Boundaries
+## OpenSpec Boundary
 
-This skill adds process overhead intentionally to prevent regressions. 
+OpenSpec is required for:
 
-* **FableCodex**: Treated as an optional reference checklist, not a parallel execution layer. Its inspection concepts may inspire reviews but cannot replace OpenSpec tasks or Step Evidence Gates.
-* **Caveman-Style Output**: May compress chat messages, progress updates, or git commit messages. It **must not** compress official engineering artifacts (e.g., OpenSpec proposals, Superpowers plans, verification records, risk/rollback notes).
+- new functionality or public behavior changes;
+- API, schema, data lifecycle, persistence, or migration changes;
+- security, sandbox, permissions, cross-tenant behavior, or auth changes;
+- runtime tool exposure, cache strategy, request routing, skill routing, or workflow lifecycle changes;
+- broad refactors that alter system boundaries;
+- skill workflow changes.
 
----
+OpenSpec may be skipped only for narrow restoration of existing intended behavior, small config changes without contract impact, typo/comment/formatting changes, docs-only updates without behavior impact, or tests for already-defined behavior.
+
+## Evidence Profiles
+
+| Profile | Typical Use |
+|---|---|
+| compact | Low-risk docs, formatting, config, or localized direct changes. |
+| standard | Default multi-step implementation, review, and verification. |
+| strict | Security, auth, public API/schema, persistence, migration, deployment, rollback, or cross-tenant work. |
+
+## Repository Structure
+
+```text
+.
+├── SKILL.md
+├── references/
+│   ├── request-modes.md
+│   ├── openspec-decision-rule.md
+│   ├── proposal-workflow.md
+│   ├── approved-implementation-workflow.md
+│   ├── direct-change-rule.md
+│   ├── step-evidence-gate.md
+│   ├── self-evolution-rule.md
+│   └── sync-checklist.md
+├── scripts/
+│   └── validate_core_gates.py
+├── examples/
+├── templates/
+└── docs/
+```
+
+## Key References
+
+- `references/request-modes.md`: operating modes and constraints.
+- `references/openspec-decision-rule.md`: when OpenSpec is mandatory.
+- `references/proposal-workflow.md`: proposal creation and validation flow.
+- `references/approved-implementation-workflow.md`: approved implementation workflow.
+- `references/direct-change-rule.md`: low-risk direct change requirements.
+- `references/step-evidence-gate.md`: compact and full evidence templates.
+- `references/self-evolution-rule.md`: rules for changing this skill.
+- `references/sync-checklist.md`: local runtime and open-source copy synchronization.
 
 ## Installation
 
-To install this skill globally in your Codex environment:
+Copy or link this skill into your Codex skills directory:
 
 ```bash
+mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
 cp -R openspec-superpower-change "${CODEX_HOME:-$HOME/.codex}/skills/openspec-superpower-change"
 ```
 
----
+## Validation
+
+Run validation after editing the skill:
+
+```bash
+python3 /Users/elvis/.codex/skills/.system/skill-creator/scripts/quick_validate.py /path/to/openspec-superpower-change
+python3 /path/to/openspec-superpower-change/scripts/validate_core_gates.py /path/to/openspec-superpower-change
+```
 
 ## Example Prompts
 
-* **Review-Only Mode**:
-  ```text
-  Use openspec-superpower-change review-only mode. Read local rules, inspect the design, and report whether implementation would require OpenSpec. Do not modify files.
-  ```
-* **Proposal First Mode**:
-  ```text
-  Use openspec-superpower-change as the only entry gate. First determine whether this requires Discovery First or OpenSpec. If OpenSpec is required, create proposal artifacts and stop for approval before implementation.
-  ```
-* **Direct Change Mode**:
-  ```text
-  Use Direct Change mode. Confirm this restores intended behavior, reproduce the bug, make the smallest fix, add or update a regression test, run verification, and report root cause, changes, verification, and residual risk.
-  ```
+```text
+Use openspec-superpower-change review-only mode. Read local rules, inspect this implementation plan, and report whether it requires OpenSpec. Do not modify files.
+```
+
+```text
+Use openspec-superpower-change as the entry gate. Decide whether this requires Discovery First or an OpenSpec proposal before implementation.
+```
+
+```text
+Use Direct Change mode. Confirm this restores intended behavior, make the smallest fix, run verification, and report evidence before claiming completion.
+```
+
+## Maintenance Notes
+
+- Do not weaken approval gates, evidence gates, or completion-claim rules.
+- Do not let OpenSpec `tasks.md` replace a Superpowers implementation plan.
+- Do not let `CONTEXT.md` replace OpenSpec proposal artifacts.
+- Do not sync runtime and open-source copies with directory-level overwrites; use the sync checklist.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
