@@ -1,6 +1,6 @@
 ---
 name: openspec-superpower-change
-description: Use when handling development changes, bugfixes, OpenSpec proposals or approvals, architecture review, implementation planning, TDD/debugging, skill self-evolution, workflow routing, evidence gates, or completion verification.
+description: "Use when handling development changes, bugfixes, architecture or code review, OpenSpec proposals/approvals, implementation plans, task or step breakdowns, TDD/debugging, external-agent handoff, skill/workflow routing, or completion verification; also trigger on 变更评审、实施计划、任务拆解、外部 Agent 协作."
 ---
 
 # OpenSpec + Superpowers Change Gate
