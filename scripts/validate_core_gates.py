@@ -216,6 +216,9 @@ def main(argv: list[str]) -> int:
     require(self_rule, "quick_validate.py", "self-evolution-rule.md")
     require(self_rule, "short-circuit only unrelated business-project OpenSpec recursion", "self-evolution-rule.md")
     require(self_rule, "Do not short-circuit user approval", "self-evolution-rule.md")
+    require(self_rule, "Backups created for self-evolution are temporary rollback aids, not history.", "self-evolution-rule.md")
+    require(self_rule, "After validation/forward-test pass", "self-evolution-rule.md")
+    require(self_rule, "Never leave backup skill directories under `/Users/elvis/.codex/skills/`", "self-evolution-rule.md")
 
     # Evidence gate hard boundaries.
     require(evidence, "path:line", "step-evidence-gate.md")

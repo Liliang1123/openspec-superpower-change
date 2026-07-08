@@ -15,13 +15,14 @@ This checklist applies to:
 
 - Local runtime skill: `/Users/elvis/.codex/skills/openspec-superpower-change`
 - Open-source project: `/Users/elvis/file/develop/opensource/openspec-superpower-change`
+- Related open-source history project: `/Users/elvis/file/develop/opensource/codex-brief-antigravity-review`
 
 ## Pre-change checklist
 
 1. Confirm the change level: Patch, Minor, or Major.
 2. If Major, stop and require OpenSpec approval before implementation.
 3. Confirm the intended source of truth for this change: local runtime, open-source project, or both.
-4. Create timestamped backups before editing both affected trees.
+4. Create timestamped temporary structured backups before editing both affected trees.
 5. Check the open-source repo is clean before editing:
 
 ```bash
@@ -74,6 +75,18 @@ Minimum scenarios:
 4. Major self-evolution weakening request must require OpenSpec and refuse direct implementation.
 5. Minor self-evolution in a temporary copy should backup, edit, validate, and report.
 
+## Backup cleanup checklist
+
+After validation and required forward-tests pass:
+
+1. Remove temporary structured backups created for the update.
+2. Remove `.bak.*` files from the runtime skill and open-source working trees.
+3. Remove discoverable `*.backup*` skill directories from `/Users/elvis/.codex/skills/`.
+4. Keep a temporary backup only when validation fails, rollback is pending, or the
+   user explicitly asks to retain it.
+5. Treat the open-source git history as the long-term version history; do not
+   keep parallel backup histories in skill discovery paths.
+
 ## Git checklist for open-source sync
 
 1. Review diff:
@@ -93,7 +106,7 @@ Every sync report must include:
 
 - change level;
 - source of truth;
-- backup paths;
+- temporary backup paths and cleanup result;
 - changed files in local runtime skill;
 - changed files in open-source project;
 - validation commands and results;

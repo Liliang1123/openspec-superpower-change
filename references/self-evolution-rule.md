@@ -46,6 +46,26 @@ For Major self-evolution, the first deliverable must be a review draft plan, not
 
 Implementation starts only after user approval or an explicitly approved change contract. Approval must be recorded in the response before editing.
 
+## Backup lifecycle
+
+Backups created for self-evolution are temporary rollback aids, not history.
+Long-term history must be managed by the open-source repositories:
+
+- `/Users/elvis/file/develop/opensource/openspec-superpower-change`
+- `/Users/elvis/file/develop/opensource/codex-brief-antigravity-review`
+
+Rules:
+
+- Create a structured temporary backup before editing.
+- Keep it while validation, forward-test, and rollback decisions are unresolved.
+- After validation/forward-test pass and the final state is synced to the
+  open-source repo, delete temporary backups, `.bak.*` files, and discoverable
+  `*.backup*` skill directories.
+- Never leave backup skill directories under `/Users/elvis/.codex/skills/`;
+  they can be discovered as duplicate skills.
+- If validation fails or rollback is needed, keep the backup only until rollback
+  or user decision is complete, then clean it up.
+
 Before editing, create a timestamped backup of the runtime skill. When validating local runtime changes, prefer running validation with the target project environment, for example:
 
 ```bash
@@ -59,19 +79,20 @@ Forward-tests must run in a temporary copy or isolated fixture when practical. D
 1. State that Self-Evolution mode is active.
 2. Read current `SKILL.md` and affected references.
 3. Classify the change level: Patch, Minor, or Major.
-4. Create a timestamped backup before editing.
+4. Create a timestamped temporary structured backup before editing.
 5. State the change intent, affected files, expected behavior impact, and rollback path.
 6. Decide whether OpenSpec is required.
 7. Implement only within the approved skill scope.
 8. Run `quick_validate.py` for the skill folder.
 9. Run static semantic checks relevant to the change.
 10. Run forward-test for Minor changes when practical and for all Major changes after approval.
-11. Report changed files, validation results, forward-test results, residual risks, and rollback path.
+11. Report changed files, validation results, forward-test results, backup cleanup result, residual risks, and rollback path.
 
 ## Hard prohibitions
 
 - Do not self-modify without a backup.
-- Do not delete or overwrite backups.
+- Do not delete backups before validation/forward-test and rollback decisions are complete.
+- Do not leave `.bak.*` files or `*.backup*` skill directories after a successful update.
 - Do not weaken Non-negotiables.
 - Do not bypass OpenSpec approval for Major self-evolution.
 - Do not remove verification-before-completion.
@@ -111,7 +132,7 @@ Recommended self-evolution forward-tests:
 After self-evolution, report:
 
 - change level;
-- backup path;
+- temporary backup path and cleanup result;
 - files changed;
 - why the change was made;
 - behavior impact;
