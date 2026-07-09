@@ -4,7 +4,7 @@
 
 - Forward-test review-only, direct bugfix, and OpenSpec-backed implementation examples.
 - Add stricter examples for security, database migration, and skill workflow changes.
-- Add a lightweight validation script if needed.
+- Expand forward-test fixtures for security and migration profiles.
 
 ## Later
 

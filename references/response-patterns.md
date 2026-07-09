@@ -6,6 +6,8 @@
 2. State whether the described change would require OpenSpec if implemented.
 3. Summarize unclear terms, risks, missing artifacts, approval gates, and recommendations.
 4. If asked, provide an implementation-ready prompt for another agent.
+5. For standalone prompt wording or ordinary diff/Report review, route to
+   `codex-brief-antigravity-review` instead of creating change-gate artifacts.
 
 ## Discovery-first requests
 
@@ -34,7 +36,8 @@
 3. Use TDD or systematic debugging as applicable, then implement the scoped change.
 4. Run targeted official verification.
 5. For gated direct changes, report compact Step Evidence Gate results.
-6. Report changed files, tests run, and verification evidence.
+6. Run focused diff/self-review; findings return to fix and re-verification.
+7. Report changed files, tests, Review result, and verification evidence.
 
 ## Gate 0 pattern
 
@@ -45,6 +48,8 @@ Use before any state-changing action:
 3. OpenSpec decision: yes/no/uncertain with one-line reason.
 4. Required Superpowers: list required sub-skills or state none.
 5. Risk and confirmation: state risk level, next action, and whether user confirmation is required.
+
+For a non-behavioral micro change, combine these fields into one concise line.
 
 ## Implementation blocked by gate
 
@@ -71,3 +76,11 @@ For Major self-evolution before approval:
 2. Provide or update a review draft plan, not implementation.
 3. Include affected files, exact rule snippets, validation, forward-test, and rollback path.
 4. Stop for review/approval before editing the skill.
+
+## Completion pattern
+
+1. State the final Review result and artifact or inline review evidence.
+2. List fresh final verification commands and results.
+3. Confirm scope, sensitive-data, temporary-file, and unrelated-change checks.
+4. If any result is `FAIL` or `BLOCKED`, return to correction and do not claim
+   completion.

@@ -16,4 +16,6 @@ Strict path.
 - Run strict validation.
 - Stop for approval before implementation.
 - After approval, create Superpowers implementation plan.
-- Execute with Step Evidence Gate and formal verification.
+- Execute complete business slices with Step Evidence Gate and formal verification.
+- Review each required slice; findings return to fix, re-verification, and Review.
+- Run fresh final verification and final diff/scope Review before completion.

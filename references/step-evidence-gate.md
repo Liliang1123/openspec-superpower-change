@@ -7,6 +7,10 @@ Full evidence requirements do not always require verbose output. Report compactl
 when all evidence is complete and the step is not high-risk, contract-changing,
 or explicitly requested in full.
 
+“Step” means a complete business slice or explicit risk milestone. It does not
+mean every two-to-five-minute TDD checkbox. TDD owns RED/GREEN micro-steps;
+this gate decides whether the slice may advance.
+
 
 ## Compact Gate Templates
 
@@ -46,7 +50,22 @@ Gate 0 must happen before file modification, state-changing command, implementat
 - Results:
 - Residual risks:
 - Out-of-scope changes checked:
+- Review result and artifact/inline evidence:
 - Completion claim allowed: yes/no
+
+## Review Gate
+
+- `compact`: focused diff/self-review may be recorded inline.
+- `standard`: use a distinct review pass after implementation and slice
+  verification.
+- `strict`: use an independent review pass and all required real acceptance
+  layers.
+- External Handoff-backed Review is the batch review gate and must not be
+  duplicated merely for ceremony.
+- `FAIL` returns to the same scope for fix -> verification -> Review.
+- `BLOCKED` records owner and resume condition; after recovery, refresh evidence
+  and Review the same scope again.
+- No completion claim is allowed without Review PASS.
 
 ## Interrupted / Dirty Diff Audit
 
@@ -121,6 +140,7 @@ Only allow the next step when all conditions hold:
 - Positive checks are complete.
 - Negative searches are complete.
 - Formal verification has run with the repository's required commands.
+- Required Review has passed for the evidence profile.
 - There are no out-of-scope edits.
 - No fake contract was introduced.
 - No old error path or outdated public claim remains in the step scope.

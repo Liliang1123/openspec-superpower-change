@@ -14,4 +14,9 @@ Use this workflow when OpenSpec is required.
 6. Validate with `openspec validate <change-id> --strict`.
 7. Present the proposal summary and wait for user approval before code changes.
 
+When `superpowers:brainstorming` is needed, use it to clarify alternatives and
+write the accepted decisions into OpenSpec `design.md`/spec deltas. The approved
+OpenSpec artifacts are the single design contract; do not require a duplicate
+`docs/superpowers/specs/` artifact, commit, and approval for the same decision.
+
 Do not implement OpenSpec-required work before approval.

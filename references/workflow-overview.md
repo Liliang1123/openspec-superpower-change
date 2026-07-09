@@ -24,8 +24,9 @@ read local instructions
 -> create or update OpenSpec proposal when required
 -> wait for approval before implementation
 -> create Superpowers implementation plan for approved work
--> execute with TDD/debugging and Step Evidence Gate
--> run formal verification
+-> execute business slices with TDD/debugging and Step Evidence Gate
+-> verify -> Review -> fix and repeat until Review PASS
+-> run fresh final verification and final diff/scope Review
 -> report changed files, evidence, risks, and next steps
 ```
 
@@ -46,7 +47,7 @@ For OpenSpec-backed work:
 - OpenSpec artifacts: `openspec/changes/<change-id>/proposal.md`, `tasks.md`, optional `design.md`, and spec deltas.
 - Superpowers implementation plan: `docs/superpowers/plans/YYYY-MM-DD-<change-id>.md`.
 - Step Evidence Gate signoff notes for gated implementation steps.
-- Verification evidence before completion.
+- Verification evidence and Review PASS before completion.
 
 Optional discovery artifacts:
 
@@ -59,3 +60,10 @@ Optional discovery artifacts:
 - Superpowers defines how approved work is planned, implemented, tested, debugged, reviewed, and verified.
 - Step Evidence Gate defines progress evidence and signoff conditions.
 - This skill defines routing, ordering, and gate enforcement.
+
+## Companion Skill Boundary
+
+`codex-brief-antigravity-review` may work standalone for task prompts, briefs,
+checklists, and read-only diff/evidence review. It consumes the Handoff Contract
+only when governing external execution. It never replaces this skill as the
+entry gate for file changes or as the final completion owner.

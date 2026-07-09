@@ -53,11 +53,14 @@ git -C /Users/elvis/file/develop/opensource/openspec-superpower-change status -s
 Run for both local and open-source copies when present:
 
 ```bash
-python3 /Users/elvis/.codex/skills/.system/skill-creator/scripts/quick_validate.py /Users/elvis/.codex/skills/openspec-superpower-change
-python3 /Users/elvis/.codex/skills/openspec-superpower-change/scripts/validate_core_gates.py /Users/elvis/.codex/skills/openspec-superpower-change
-python3 /Users/elvis/.codex/skills/.system/skill-creator/scripts/quick_validate.py /Users/elvis/file/develop/opensource/openspec-superpower-change
-python3 /Users/elvis/file/develop/opensource/openspec-superpower-change/scripts/validate_core_gates.py /Users/elvis/file/develop/opensource/openspec-superpower-change
+"${PYTHON_BIN:-python3}" /Users/elvis/.codex/skills/.system/skill-creator/scripts/quick_validate.py /Users/elvis/.codex/skills/openspec-superpower-change
+PYTHONDONTWRITEBYTECODE=1 python3 /Users/elvis/.codex/skills/openspec-superpower-change/scripts/validate_core_gates.py /Users/elvis/.codex/skills/openspec-superpower-change
+"${PYTHON_BIN:-python3}" /Users/elvis/.codex/skills/.system/skill-creator/scripts/quick_validate.py /Users/elvis/file/develop/opensource/openspec-superpower-change
+PYTHONDONTWRITEBYTECODE=1 python3 /Users/elvis/file/develop/opensource/openspec-superpower-change/scripts/validate_core_gates.py /Users/elvis/file/develop/opensource/openspec-superpower-change
 ```
+
+Set `PYTHON_BIN` to an interpreter with PyYAML. Run both repositories'
+standard-library `unittest` suites with default `python3` to exercise fallback behavior.
 
 ## Forward-test checklist
 

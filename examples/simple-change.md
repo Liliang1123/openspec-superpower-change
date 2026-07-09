@@ -13,4 +13,5 @@ Lightweight Direct Change.
 - State OpenSpec is not required because there is no behavior or contract change.
 - Modify only the typo.
 - Verify by reviewing the changed file or running docs checks when available.
-- Report changed file and verification.
+- Run a compact inline diff/self-review.
+- Report changed file, verification, and Review result.

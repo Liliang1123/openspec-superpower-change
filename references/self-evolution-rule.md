@@ -66,10 +66,13 @@ Rules:
 - If validation fails or rollback is needed, keep the backup only until rollback
   or user decision is complete, then clean it up.
 
-Before editing, create a timestamped backup of the runtime skill. When validating local runtime changes, prefer running validation with the target project environment, for example:
+Before editing, create a timestamped backup of the runtime skill. Run
+`quick_validate.py` with a Python interpreter that provides PyYAML; keep the
+project validator usable without PyYAML. For example:
 
 ```bash
-conda run -n qagent-3.12.11 python3 /Users/elvis/.codex/skills/.system/skill-creator/scripts/quick_validate.py /Users/elvis/.codex/skills/openspec-superpower-change
+"${PYTHON_BIN:-python3}" /Users/elvis/.codex/skills/.system/skill-creator/scripts/quick_validate.py /Users/elvis/.codex/skills/openspec-superpower-change
+PYTHONDONTWRITEBYTECODE=1 python3 /Users/elvis/.codex/skills/openspec-superpower-change/scripts/validate_core_gates.py /Users/elvis/.codex/skills/openspec-superpower-change
 ```
 
 Forward-tests must run in a temporary copy or isolated fixture when practical. Do not mutate `/Users/elvis/.codex/skills/` during forward-tests except for the explicitly approved target skill edit.
@@ -86,7 +89,8 @@ Forward-tests must run in a temporary copy or isolated fixture when practical. D
 8. Run `quick_validate.py` for the skill folder.
 9. Run static semantic checks relevant to the change.
 10. Run forward-test for Minor changes when practical and for all Major changes after approval.
-11. Report changed files, validation results, forward-test results, backup cleanup result, residual risks, and rollback path.
+11. Run profile-appropriate Review; findings return to edit, validation, forward-test, and Review.
+12. Report changed files, validation results, Review/forward-test results, backup cleanup result, residual risks, and rollback path.
 
 ## Hard prohibitions
 

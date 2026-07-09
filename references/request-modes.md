@@ -2,7 +2,10 @@
 
 ## Review-only
 
-Use when the user asks to review, assess, critique, summarize, improve, or generate a prompt without explicitly asking for implementation.
+Use when the user asks this change gate to assess architecture, OpenSpec need,
+implementation authorization, risk, or completion evidence without changing
+files. Standalone prompt/Brief/checklist writing and ordinary read-only
+diff/Report review belong to `codex-brief-antigravity-review`.
 
 Rules:
 
@@ -13,6 +16,8 @@ Rules:
 - Identify unclear terms, missing approval gates, test gaps, artifact gaps, and execution risks.
 - If asked to stress-test a plan, use the `grill-with-docs` questioning style but keep it read-only unless the user explicitly asks to update docs.
 - Switching from review-only to implementation requires explicit user confirmation.
+- “Review and fix”, “review then implement”, or any request to edit files is
+  not Review-only; reclassify it through this change gate before modification.
 
 ## Discovery First
 
@@ -61,3 +66,8 @@ Direct Change is forbidden when the change touches any of:
 - cross-module behavior or multi-file runtime changes.
 
 These cases must enter Discovery First or OpenSpec proposal unless an approved existing contract explicitly covers the behavior. A localized bugfix label is not enough to bypass this exclusion.
+
+If the user requests an external agent for an otherwise valid Direct Change,
+this router creates a compact Handoff Contract and then delegates the batch to
+`codex-brief-antigravity-review`; external execution does not upgrade the work
+to OpenSpec by itself.

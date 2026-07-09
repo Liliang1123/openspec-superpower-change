@@ -18,8 +18,17 @@ Rules:
 - Direct change means no proposal gate; it does not mean skipping code facts, scoped evidence, TDD/debugging, or verification when those gates apply.
 - Still read applicable local instructions such as `AGENTS.md`.
 - Use `superpowers:systematic-debugging` before changing code for unexplained failures.
-- Use `superpowers:test-driven-development` for bugfix code, tests, or already-approved/already-defined implementation work unless explicitly forbidden.
+- Use `superpowers:test-driven-development` for bugfix code and behavior
+  changes. A test-only addition for already-defined behavior should pass
+  against current runtime behavior and uses focused verification instead; do
+  not claim runtime behavior changed.
 - Use compact Step Evidence Gate when the direct change is more than a typo, formatting, comment, small config-only, review-only, proposal-only, docs-only, or test-only task.
 - New feature behavior still requires OpenSpec unless it is already covered by an approved spec.
 - Provide verification evidence before claiming completion.
 - Do not create OpenSpec artifacts or Superpowers plans unless the user explicitly asks for them.
+- Always Review before completion: a focused inline diff/self-review is enough
+  for `compact`; use a distinct review pass if risk or scope becomes standard.
+- If external execution is requested, create a compact schema-version-2
+  Handoff Contract and hand the batch to `codex-brief-antigravity-review`.
+- Any Review finding returns to fix -> verification -> Review on the same
+  scope. `FAIL` or `BLOCKED` is not completion.

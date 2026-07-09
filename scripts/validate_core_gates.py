@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""Validate core gates for openspec-superpower-change.
-
-This script intentionally checks for non-negotiable governance text that should
-not be weakened by self-evolution. It complements, but does not replace,
-skill-creator quick_validate.py.
-"""
+"""Validate non-negotiable routing, lifecycle, and completion gates."""
 from __future__ import annotations
 
 import re
@@ -13,34 +8,73 @@ from pathlib import Path
 
 try:
     import yaml
-except ModuleNotFoundError:  # pragma: no cover - exercised when PyYAML is absent
+except ModuleNotFoundError:  # The supported subset has a dependency-free fallback.
     yaml = None
 
 
 START = "<!-- COOP_HANDOFF_CONTRACT_START -->"
 END = "<!-- COOP_HANDOFF_CONTRACT_END -->"
+SCHEMA_VERSION = 2
 RISK_PROFILES = {"compact", "standard", "strict"}
 BATCH_PROFILES = {"single", "cohesive", "staged"}
 BUSINESS_ACCEPTANCE = {"required", "optional", "not-applicable"}
 MODES = {
-    "review-only",
-    "discovery-first",
-    "openspec-proposal",
-    "approved-implementation",
-    "direct-change",
-    "self-evolution",
+    "review-only", "discovery-first", "openspec-proposal",
+    "approved-implementation", "direct-change", "self-evolution",
 }
 APPROVAL_STATUSES = {"not-required", "proposed", "approved", "blocked"}
 EXECUTORS = {"codex", "external-agent"}
-GOVERNORS = {"codex", "codex-brief-antigravity-review"}
-NEXT_OWNERS = {"codex", "codex-brief-antigravity-review", "external-agent", "user"}
+GOVERNORS = {"openspec-superpower-change", "codex-brief-antigravity-review"}
+NEXT_OWNERS = {
+    "openspec-superpower-change", "codex-brief-antigravity-review",
+    "external-agent", "user",
+}
+LIFECYCLE_STATES = {
+    "ready-for-brief", "ready-for-execution", "ready-for-review",
+    "needs-fix", "blocked", "awaiting-final-verification", "complete",
+}
+REVIEW_RESULTS = {"not-run", "pass", "fail", "blocked"}
+FINAL_VERIFICATION_RESULTS = {"pending", "pass", "fail", "blocked"}
+FINAL_REVIEW_RESULTS = {"pending", "pass", "fail", "blocked"}
+BLOCKER_OWNERS = {
+    "none", "openspec-superpower-change", "codex-brief-antigravity-review",
+    "external-agent", "user", "dependency",
+}
+ALLOWED_TRANSITIONS = {
+    "ready-for-brief": {"ready-for-execution", "blocked"},
+    "ready-for-execution": {"ready-for-review", "blocked"},
+    "ready-for-review": {
+        "needs-fix", "blocked", "ready-for-brief",
+        "awaiting-final-verification",
+    },
+    "needs-fix": {"ready-for-execution", "blocked"},
+    "blocked": {
+        "ready-for-brief", "ready-for-execution", "ready-for-review",
+        "needs-fix", "blocked",
+    },
+    "awaiting-final-verification": {"complete", "needs-fix", "blocked"},
+    "complete": set(),
+}
+IMMUTABLE_FIELDS = {
+    "schema_version", "change_id", "mode", "approval_status", "risk_profile",
+    "batch_profile", "planned_batches", "executor", "governor",
+    "step_critical", "final_critical", "business_acceptance",
+    "stop_conditions", "verification_strategy", "readonly_fields",
+}
 
 
 def parse_scalar(value: str):
     value = value.strip()
-    if (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
+    if (value.startswith('"') and value.endswith('"')) or (
+        value.startswith("'") and value.endswith("'")
+    ):
         return value[1:-1]
-    if value.isdigit():
+    lowered = value.lower()
+    if lowered in {"true", "false"}:
+        return lowered == "true"
+    if lowered in {"null", "~"}:
+        return None
+    if re.fullmatch(r"-?\d+", value):
         return int(value)
     return value
 
@@ -77,15 +111,14 @@ def simple_yaml_load(text: str) -> dict:
 
 
 def yaml_load(text: str):
-    if yaml is not None:
-        return yaml.safe_load(text)
-    return simple_yaml_load(text)
+    return yaml.safe_load(text) if yaml is not None else simple_yaml_load(text)
+
 
 def read(path: Path) -> str:
     try:
         return path.read_text(encoding="utf-8")
-    except FileNotFoundError:
-        raise AssertionError(f"missing required file: {path}")
+    except FileNotFoundError as exc:
+        raise AssertionError(f"missing required file: {path}") from exc
 
 
 def require(text: str, needle: str, label: str) -> None:
@@ -94,7 +127,7 @@ def require(text: str, needle: str, label: str) -> None:
 
 
 def require_any(text: str, needles: list[str], label: str) -> None:
-    if not any(n in text for n in needles):
+    if not any(needle in text for needle in needles):
         raise AssertionError(f"{label}: missing one of required texts: {needles!r}")
 
 
@@ -112,68 +145,204 @@ def extract_handoff_contract(text: str, label: str) -> dict:
     return data
 
 
+def _require_positive_int(data: dict, key: str, label: str) -> None:
+    if not isinstance(data[key], int) or data[key] < 1:
+        raise AssertionError(f"{label}: {key} must be a positive integer")
+
+
 def validate_handoff_contract(data: dict, label: str) -> None:
     required = {
-        "schema_version",
-        "change_id",
-        "mode",
-        "approval_status",
-        "risk_profile",
-        "batch_profile",
-        "current_batch",
-        "planned_batches",
-        "executor",
-        "governor",
-        "next_owner",
-        "step_critical",
-        "final_critical",
-        "business_acceptance",
-        "stop_conditions",
-        "verification_strategy",
+        "schema_version", "change_id", "mode", "approval_status",
+        "risk_profile", "batch_profile", "current_batch", "planned_batches",
+        "attempt", "contract_revision", "lifecycle_state",
+        "last_review_result", "blocked_reason", "blocker_owner",
+        "resume_condition", "final_verification", "final_review_result",
+        "executor", "governor",
+        "next_owner", "step_critical", "final_critical",
+        "business_acceptance", "stop_conditions", "verification_strategy",
+        "readonly_fields",
     }
     missing = sorted(required - set(data))
     if missing:
         raise AssertionError(f"{label}: missing contract fields: {missing}")
-    if data["mode"] not in MODES:
-        raise AssertionError(f"{label}: invalid mode")
-    if data["approval_status"] not in APPROVAL_STATUSES:
-        raise AssertionError(f"{label}: invalid approval_status")
-    if data["risk_profile"] not in RISK_PROFILES:
-        raise AssertionError(f"{label}: invalid risk_profile")
-    if data["batch_profile"] not in BATCH_PROFILES:
-        raise AssertionError(f"{label}: invalid batch_profile")
-    if data["executor"] not in EXECUTORS:
-        raise AssertionError(f"{label}: invalid executor")
-    if data["governor"] not in GOVERNORS:
-        raise AssertionError(f"{label}: invalid governor")
-    if data["next_owner"] not in NEXT_OWNERS:
-        raise AssertionError(f"{label}: invalid next_owner")
-    if int(data["current_batch"]) < 1 or int(data["current_batch"]) > int(data["planned_batches"]):
-        raise AssertionError(f"{label}: current_batch must be between 1 and planned_batches")
+    if data["schema_version"] != SCHEMA_VERSION:
+        raise AssertionError(f"{label}: schema_version must be {SCHEMA_VERSION}")
+    enums = {
+        "mode": MODES,
+        "approval_status": APPROVAL_STATUSES,
+        "risk_profile": RISK_PROFILES,
+        "batch_profile": BATCH_PROFILES,
+        "executor": EXECUTORS,
+        "governor": GOVERNORS,
+        "next_owner": NEXT_OWNERS,
+        "lifecycle_state": LIFECYCLE_STATES,
+        "last_review_result": REVIEW_RESULTS,
+        "blocker_owner": BLOCKER_OWNERS,
+        "final_verification": FINAL_VERIFICATION_RESULTS,
+        "final_review_result": FINAL_REVIEW_RESULTS,
+    }
+    for key, allowed in enums.items():
+        if data[key] not in allowed:
+            raise AssertionError(f"{label}: invalid {key}")
+    for key in ("current_batch", "planned_batches", "attempt", "contract_revision"):
+        _require_positive_int(data, key, label)
+    if data["current_batch"] > data["planned_batches"]:
+        raise AssertionError(f"{label}: current_batch must not exceed planned_batches")
+    if not isinstance(data["change_id"], str) or not re.fullmatch(
+        r"[a-z0-9]+(?:-[a-z0-9]+)*", data["change_id"]
+    ):
+        raise AssertionError(f"{label}: change_id must be a path-safe kebab-case slug")
+    if data["executor"] != "external-agent" or data["governor"] != "codex-brief-antigravity-review":
+        raise AssertionError(f"{label}: execution contract requires external-agent executor and brief governor")
+    if data["mode"] not in {"approved-implementation", "direct-change", "self-evolution"}:
+        raise AssertionError(f"{label}: execution contract has invalid mode")
+    if data["mode"] in {"approved-implementation", "self-evolution"} and data["approval_status"] != "approved":
+        raise AssertionError(f"{label}: execution contract must be approved")
+    if data["mode"] == "direct-change" and data["approval_status"] not in {"not-required", "approved"}:
+        raise AssertionError(f"{label}: direct-change execution contract has invalid approval")
     acceptance = data["business_acceptance"]
+    if not isinstance(acceptance, dict):
+        raise AssertionError(f"{label}: business_acceptance must be a mapping")
     for key in ("unit", "pipeline", "api", "real_business"):
-        if key not in acceptance:
-            raise AssertionError(f"{label}: missing business_acceptance.{key}")
-        if acceptance[key] not in BUSINESS_ACCEPTANCE:
+        if acceptance.get(key) not in BUSINESS_ACCEPTANCE:
             raise AssertionError(f"{label}: invalid business_acceptance.{key}")
-    if data["risk_profile"] in {"standard", "strict"}:
-        for key in ("step_critical", "final_critical"):
-            if not isinstance(data[key], list) or not data[key] or not all(isinstance(item, str) for item in data[key]):
-                raise AssertionError(f"{label}: {key} must be a non-empty string list")
+    for key in ("step_critical", "final_critical"):
+        if not isinstance(data[key], list) or not all(isinstance(item, str) for item in data[key]):
+            raise AssertionError(f"{label}: {key} must be a string list")
+        if data["risk_profile"] in {"standard", "strict"} and not data[key]:
+            raise AssertionError(f"{label}: {key} must be a non-empty string list")
+    if not isinstance(data["stop_conditions"], list) or not data["stop_conditions"] or not all(
+        isinstance(item, str) for item in data["stop_conditions"]
+    ):
+        raise AssertionError(f"{label}: stop_conditions must be a non-empty string list")
+    strategy = data["verification_strategy"]
+    if not isinstance(strategy, dict) or not all(
+        isinstance(strategy.get(key), str) and strategy[key]
+        for key in ("step", "final")
+    ):
+        raise AssertionError(f"{label}: verification_strategy must be a step/final string mapping")
+    readonly = data["readonly_fields"]
+    expected_readonly = IMMUTABLE_FIELDS
+    if not isinstance(readonly, list) or not expected_readonly.issubset(readonly):
+        raise AssertionError(f"{label}: readonly_fields is incomplete")
+
+    state = data["lifecycle_state"]
+    expected_owners = {
+        "ready-for-brief": {"codex-brief-antigravity-review"},
+        "ready-for-execution": {"external-agent"},
+        "ready-for-review": {"codex-brief-antigravity-review"},
+        "needs-fix": {"codex-brief-antigravity-review", "openspec-superpower-change"},
+        "blocked": NEXT_OWNERS,
+        "awaiting-final-verification": {"openspec-superpower-change"},
+        "complete": {"user"},
+    }
+    if data["next_owner"] not in expected_owners[state]:
+        raise AssertionError(f"{label}: invalid next_owner for {state}")
+    if state != "blocked" and any(
+        data[key] not in {None, "none"}
+        for key in ("blocked_reason", "blocker_owner", "resume_condition")
+    ):
+        raise AssertionError(f"{label}: non-blocked state must clear blocker fields")
+    if state in {"ready-for-execution", "ready-for-review"} and data["last_review_result"] != "not-run":
+        raise AssertionError(f"{label}: active attempt requires last_review_result not-run")
+    if state in {"ready-for-brief", "ready-for-execution", "ready-for-review"} and (
+        data["final_verification"] != "pending" or data["final_review_result"] != "pending"
+    ):
+        raise AssertionError(f"{label}: pre-final states require pending final gates")
+    if state == "needs-fix" and data["last_review_result"] != "fail":
+        raise AssertionError(f"{label}: needs-fix requires fail review")
+    if state == "blocked":
+        if data["last_review_result"] != "blocked":
+            raise AssertionError(f"{label}: blocked review result is required")
+        if data["blocker_owner"] == "none" or data["blocked_reason"] in {None, "none"}:
+            raise AssertionError(f"{label}: blocked requires blocker owner and reason")
+        if data["resume_condition"] in {None, "none"}:
+            raise AssertionError(f"{label}: blocked requires resume_condition")
+    if state == "awaiting-final-verification":
+        if data["current_batch"] != data["planned_batches"]:
+            raise AssertionError(f"{label}: awaiting-final-verification requires final batch")
+        if (
+            data["last_review_result"] != "pass"
+            or data["final_verification"] != "pending"
+            or data["final_review_result"] != "pending"
+        ):
+            raise AssertionError(f"{label}: awaiting-final-verification requires batch review pass and pending final gates")
+        if data["next_owner"] != "openspec-superpower-change":
+            raise AssertionError(f"{label}: awaiting-final-verification must return to router")
+    if state == "complete":
+        if data["current_batch"] != data["planned_batches"]:
+            raise AssertionError(f"{label}: complete requires final batch")
+        if (
+            data["last_review_result"] != "pass"
+            or data["final_verification"] != "pass"
+            or data["final_review_result"] != "pass"
+        ):
+            raise AssertionError(f"{label}: complete requires batch review, final review, and final verification pass")
+        if data["next_owner"] != "user":
+            raise AssertionError(f"{label}: complete requires next_owner user")
+    elif data["final_verification"] == "pass" or data["final_review_result"] == "pass":
+        raise AssertionError(f"{label}: final pass results are valid only when complete")
+
+
+def validate_transition(before: dict, after: dict, label: str) -> None:
+    validate_handoff_contract(before, f"{label}:before")
+    validate_handoff_contract(after, f"{label}:after")
+    if before["lifecycle_state"] == "complete":
+        raise AssertionError(f"{label}: complete is terminal")
+    for key in IMMUTABLE_FIELDS:
+        if before[key] != after[key]:
+            raise AssertionError(f"{label}: readonly field changed: {key}")
+    if after["contract_revision"] != before["contract_revision"] + 1:
+        raise AssertionError(f"{label}: contract_revision must increment by one")
+    current_state = before["lifecycle_state"]
+    next_state = after["lifecycle_state"]
+    if next_state not in ALLOWED_TRANSITIONS[current_state]:
+        raise AssertionError(f"{label}: invalid lifecycle transition")
+    special_attempt_transitions = {
+        ("ready-for-review", "needs-fix"),
+        ("ready-for-review", "ready-for-brief"),
+        ("awaiting-final-verification", "needs-fix"),
+    }
+    if current_state == "blocked" and next_state != "blocked":
+        special_attempt_transitions.add((current_state, next_state))
+    if (current_state, next_state) not in special_attempt_transitions:
+        if after["current_batch"] != before["current_batch"] or after["attempt"] != before["attempt"]:
+            raise AssertionError(f"{label}: transition must keep the same batch and attempt")
+    if next_state in {"needs-fix", "blocked"} and after["current_batch"] != before["current_batch"]:
+        raise AssertionError(f"{label}: FAIL/BLOCKED must stay on the same batch")
+    if next_state == "needs-fix":
+        if after["attempt"] != before["attempt"] + 1:
+            raise AssertionError(f"{label}: FAIL must increment attempt")
+        if after["last_review_result"] != "fail":
+            raise AssertionError(f"{label}: needs-fix requires fail review")
+    if current_state == "blocked" and next_state != "blocked":
+        if after["current_batch"] != before["current_batch"]:
+            raise AssertionError(f"{label}: resumed work must stay on the same batch")
+        if after["attempt"] != before["attempt"] + 1:
+            raise AssertionError(f"{label}: resumed work must use a fresh attempt")
+    if current_state == "ready-for-review" and next_state == "ready-for-brief":
+        if before["current_batch"] >= before["planned_batches"]:
+            raise AssertionError(f"{label}: final PASS must hand back to router")
+        if after["current_batch"] != before["current_batch"] + 1 or after["attempt"] != 1:
+            raise AssertionError(f"{label}: non-final PASS must advance one batch and reset attempt")
+        if after["last_review_result"] != "pass":
+            raise AssertionError(f"{label}: batch advance requires Review PASS")
+    if next_state == "awaiting-final-verification":
+        if before["current_batch"] != before["planned_batches"]:
+            raise AssertionError(f"{label}: only final batch can hand back")
+        if after["current_batch"] != before["current_batch"]:
+            raise AssertionError(f"{label}: final handback keeps the same batch")
 
 
 def validate_frontmatter(skill: str) -> None:
     if not skill.startswith("---\n"):
         raise AssertionError("SKILL.md: missing YAML frontmatter")
     parts = skill.split("---\n", 2)
-    if len(parts) < 3:
-        raise AssertionError("SKILL.md: malformed YAML frontmatter")
-    keys = []
-    for line in parts[1].splitlines():
-        if not line.strip() or line.startswith(" "):
-            continue
-        if ":" in line:
-            keys.append(line.split(":", 1)[0].strip())
+    keys = [
+        line.split(":", 1)[0].strip()
+        for line in parts[1].splitlines()
+        if line.strip() and not line.startswith(" ") and ":" in line
+    ]
     if keys != ["name", "description"]:
         raise AssertionError(f"SKILL.md: frontmatter keys must be name, description only; got {keys}")
 
@@ -187,56 +356,44 @@ def validate_reference_links(root: Path, skill: str) -> None:
 def main(argv: list[str]) -> int:
     root = Path(argv[1]).resolve() if len(argv) > 1 else Path.cwd().resolve()
     skill = read(root / "SKILL.md")
+    request_modes = read(root / "references" / "request-modes.md")
+    approved = read(root / "references" / "approved-implementation-workflow.md")
     self_rule = read(root / "references" / "self-evolution-rule.md")
     evidence = read(root / "references" / "step-evidence-gate.md")
     handoff = read(root / "references" / "handoff-contract.md")
 
     validate_frontmatter(skill)
     validate_reference_links(root, skill)
-
-    # Core identity and routing gates.
-    require(skill, "OpenSpec + Superpowers Change Gate", "SKILL.md")
-    require(skill, "Self-Evolution", "SKILL.md")
-    require(skill, "Do not implement OpenSpec-required work before approval", "SKILL.md")
-    require(skill, "Do not claim completion without verification evidence", "SKILL.md")
-    require(skill, "Self-evolution cannot weaken approval gates", "SKILL.md")
-    require(skill, "Never run `git add`, `git commit`, `git reset`, or `git clean`", "SKILL.md")
-    require_any(skill, ["Step Evidence Gate", "evidence gate"], "SKILL.md")
-    require_any(skill, ["Superpowers", "superpowers"], "SKILL.md")
-    require(skill, "Handoff Contract", "SKILL.md")
-    require(skill, "codex-brief-antigravity-review", "SKILL.md")
-
-    # Self-evolution hard boundaries.
-    require(self_rule, "Patch", "self-evolution-rule.md")
-    require(self_rule, "Minor", "self-evolution-rule.md")
-    require(self_rule, "Major", "self-evolution-rule.md")
-    require(self_rule, "Do not self-modify without a backup", "self-evolution-rule.md")
-    require(self_rule, "Do not bypass OpenSpec approval for Major self-evolution", "self-evolution-rule.md")
-    require(self_rule, "Do not sync to GitHub or push without explicit user approval", "self-evolution-rule.md")
-    require(self_rule, "quick_validate.py", "self-evolution-rule.md")
-    require(self_rule, "short-circuit only unrelated business-project OpenSpec recursion", "self-evolution-rule.md")
-    require(self_rule, "Do not short-circuit user approval", "self-evolution-rule.md")
-    require(self_rule, "Backups created for self-evolution are temporary rollback aids, not history.", "self-evolution-rule.md")
-    require(self_rule, "After validation/forward-test pass", "self-evolution-rule.md")
-    require(self_rule, "Never leave backup skill directories under `/Users/elvis/.codex/skills/`", "self-evolution-rule.md")
-
-    # Evidence gate hard boundaries.
-    require(evidence, "path:line", "step-evidence-gate.md")
-    require(evidence, "Formal verification", "step-evidence-gate.md")
-    require_any(evidence, ["try`/`except", "try/except"], "step-evidence-gate.md")
-    require_any(evidence, ["Next-step permission", "Next-step permission"], "step-evidence-gate.md")
-    require(evidence, "Runtime behavior change", "step-evidence-gate.md")
-    require(evidence, "API/schema/contract change", "step-evidence-gate.md")
-    require(evidence, "compact", "step-evidence-gate.md")
-    require(evidence, "standard", "step-evidence-gate.md")
-    require(evidence, "strict", "step-evidence-gate.md")
+    for needle in (
+        "OpenSpec + Superpowers Change Gate", "Self-Evolution",
+        "Do not implement OpenSpec-required work before approval",
+        "Do not claim completion without fresh verification evidence and Review PASS",
+        "Handoff Contract", "codex-brief-antigravity-review",
+        "Review and fix", "not Review-only",
+    ):
+        require(skill + request_modes, needle, "routing gates")
+    for needle in (
+        "single design approval", "not every TDD micro-step",
+        "inline implementation", "Review PASS", "final_critical",
+    ):
+        require(approved, needle, "approved-implementation-workflow.md")
+    for needle in (
+        "Do not self-modify without a backup",
+        "Do not bypass OpenSpec approval for Major self-evolution",
+        "Do not sync to GitHub or push without explicit user approval",
+        "Backups created for self-evolution are temporary rollback aids, not history.",
+    ):
+        require(self_rule, needle, "self-evolution-rule.md")
+    for needle in (
+        "business slice", "Review Gate", "No completion claim is allowed without Review PASS",
+        "path:line", "Formal verification",
+    ):
+        require(evidence, needle, "step-evidence-gate.md")
 
     contract = extract_handoff_contract(handoff, "handoff-contract.md")
     validate_handoff_contract(contract, "handoff-contract.md")
-    require(handoff, "codex-brief-antigravity-review` must not overwrite `mode`", "handoff-contract.md")
-    require(handoff, "current_batch", "handoff-contract.md")
-    require(handoff, "planned_batches", "handoff-contract.md")
-
+    require(handoff, "must not embed another mutable block", "handoff-contract.md")
+    require(handoff, "awaiting-final-verification", "handoff-contract.md")
     print(f"Core gates valid: {root}")
     return 0
 

@@ -18,9 +18,12 @@
 Run before completion:
 
 ```bash
-python3 /Users/elvis/.codex/skills/.system/skill-creator/scripts/quick_validate.py .
-python3 scripts/validate_core_gates.py .
+"${PYTHON_BIN:-python3}" /Users/elvis/.codex/skills/.system/skill-creator/scripts/quick_validate.py .
+PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_core_gates.py .
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -v
 ```
+
+`quick_validate.py` requires PyYAML; choose `PYTHON_BIN` from an environment that provides it. Project validators and tests must also pass with the dependency-free fallback.
 
 ## Sync
 

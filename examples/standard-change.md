@@ -15,4 +15,5 @@ Direct Change with compact Step Evidence Gate.
 - Use TDD when practical.
 - Make the smallest code change.
 - Run targeted tests.
-- Report root cause, changed files, verification, and residual risk.
+- Run a focused inline diff/self-review; use a distinct Review pass if scope or risk becomes `standard`.
+- Report root cause, changed files, verification, Review, and residual risk.

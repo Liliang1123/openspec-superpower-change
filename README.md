@@ -36,6 +36,7 @@ This skill turns those risks into explicit gates, references, and validation che
 | OpenSpec | Change contract, requirements, scenarios, approval state | `openspec/` |
 | Superpowers | Implementation planning, TDD, debugging, verification discipline | Superpowers skills |
 | Step Evidence Gate | Evidence required before advancing or claiming completion | `references/step-evidence-gate.md` |
+| Prompt / external batch review | Standalone prompt/diff review and Handoff-backed Brief/Report/Review attempts | `codex-brief-antigravity-review` |
 | openspec-superpower-change | Routing, risk classification, approval gate, self-evolution boundary | This skill |
 
 ## Core Workflow
@@ -48,20 +49,24 @@ Read local rules
 -> stop until approval
 -> Superpowers plan for approved implementation
 -> TDD / debugging / implementation discipline
--> Step Evidence Gate verification
--> completion only after evidence exists
+-> Step Evidence Gate on complete business slices
+-> verify -> Review -> fix and repeat until Review PASS
+-> fresh final verification and final diff/scope Review
+-> completion only after both pass
 ```
 
 ## Request Modes
 
 | Mode | Use When | File Changes? |
 |---|---|---:|
-| Review-only | The user asks to review, assess, critique, summarize, or generate a prompt. | No |
+| Review-only | The user asks this change gate to review architecture, authorization, risk, or completion evidence. | No |
 | Discovery First | Terms, actors, lifecycle, or boundaries are unclear. | Usually glossary / context only |
 | OpenSpec proposal | New capability, behavior contract, architecture, security, persistence, API, or workflow changes are needed. | Proposal artifacts only |
 | Approved implementation | An OpenSpec-backed proposal has been explicitly approved. | Yes, after plan |
 | Direct Change | Low-risk restoration, typo, formatting, docs-only, config-only, or tests for existing behavior. | Yes, scoped |
 | Self-Evolution | This skill, its references, validators, examples, or sync rules are being changed. | Yes, gated |
+
+Standalone task-prompt/Brief/checklist writing and ordinary read-only diff or Report review belong to `codex-brief-antigravity-review`. “Review and fix” returns here because it is implementation.
 
 ## Gate 0
 
@@ -110,6 +115,11 @@ OpenSpec may be skipped only for narrow restoration of existing intended behavio
 │   └── sync-checklist.md
 ├── scripts/
 │   └── validate_core_gates.py
+├── tests/
+│   └── test_workflow_rules.py
+├── openspec/
+│   ├── project.md
+│   └── changes/
 ├── examples/
 ├── templates/
 └── docs/
@@ -140,9 +150,12 @@ cp -R openspec-superpower-change "${CODEX_HOME:-$HOME/.codex}/skills/openspec-su
 Run validation after editing the skill:
 
 ```bash
-python3 /Users/elvis/.codex/skills/.system/skill-creator/scripts/quick_validate.py /path/to/openspec-superpower-change
-python3 /path/to/openspec-superpower-change/scripts/validate_core_gates.py /path/to/openspec-superpower-change
+"${PYTHON_BIN:-python3}" /Users/elvis/.codex/skills/.system/skill-creator/scripts/quick_validate.py /path/to/openspec-superpower-change
+PYTHONDONTWRITEBYTECODE=1 python3 /path/to/openspec-superpower-change/scripts/validate_core_gates.py /path/to/openspec-superpower-change
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s /path/to/openspec-superpower-change/tests -v
 ```
+
+`quick_validate.py` requires PyYAML; set `PYTHON_BIN` accordingly. The project validator and tests exercise the dependency-free fallback.
 
 ## Example Prompts
 
@@ -164,6 +177,7 @@ Use Direct Change mode. Confirm this restores intended behavior, make the smalle
 - Do not let OpenSpec `tasks.md` replace a Superpowers implementation plan.
 - Do not let `CONTEXT.md` replace OpenSpec proposal artifacts.
 - Do not sync runtime and open-source copies with directory-level overwrites; use the sync checklist.
+- Do not complete verified-but-unreviewed work; any Review finding restarts correction, verification, and Review.
 
 ## License
 
