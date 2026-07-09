@@ -73,4 +73,5 @@ Canonical state 只存在于 `docs/agent-collab/<change-id>/status.md`。Schema 
 ## 待办
 
 - 已完成两仓及两份 runtime skill 的 validator、`quick_validate.py`、38 个回归测试、parity 和三轮独立 Review。
-- 剩余发布动作：分别 commit、push，并在成功后清理临时备份。
+- 已提交并 push：`openspec-superpower-change@e073ac7`、`codex-brief-antigravity-review@c888eb0`。
+- 临时备份清理被本机安全 hook 拒绝，需手动执行：`rm -rf /private/tmp/two-codex-skills-self-evolution-20260710-064702`。

@@ -24,6 +24,6 @@
 
 ## 4. Publication
 
-- [ ] 4.1 Commit each repository separately with scoped Chinese Conventional Commit messages.
-- [ ] 4.2 Push both `main` branches to `origin` and verify tracking status.
-- [ ] 4.3 Remove temporary backups only after validation and push succeed.
+- [x] 4.1 Commit each repository separately with scoped Chinese Conventional Commit messages.
+- [x] 4.2 Push both `main` branches to `origin` and verify tracking status.
+- [ ] 4.3 Remove temporary backups only after validation and push succeed. The local safety hook rejected the approved `rm -rf`; manual cleanup remains.
