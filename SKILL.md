@@ -1,6 +1,6 @@
 ---
 name: openspec-superpower-change
-description: "Use when a request may modify files or behavior, asks review-and-fix, changes skill/workflow/template files, needs OpenSpec or Direct Change classification or Superpowers routing, or decides evidence-based final completion; also trigger on 开发变更、变更准入、OpenSpec、Review并修复、实施闭环、Skill自演进."
+description: "Use when a request may modify files or behavior, asks review-and-fix, changes skill/workflow/template files, needs OpenSpec or Direct Change classification or Superpowers routing, or decides evidence-based final completion; also trigger on 开发变更、变更准入、OpenSpec、Review并修复、实施闭环、Skill自演进. 可按用户要求输出 caveman 风格摘要，但不改治理约束。"
 ---
 
 # OpenSpec + Superpowers Change Gate
@@ -9,6 +9,17 @@ Single entry gate for state-changing development work. It classifies the
 request, protects approval boundaries, selects implementation discipline, and
 owns final review and verification. It does not own standalone prompt wording
 or an already-handed-off external batch.
+
+## Token-lean / Caveman output mode
+
+`caveman` is **输出压缩层**，非治理机制。该层只优化表达密度，不改变任何
+路由/批准/证据/状态变更规则。
+
+- 触发：用户明确要求“少 token/更短/更精简/像 caveman 说”。
+- 允许：路由结论、Gate 0 摘要、发现列表、风险要点、验证命令说明。
+- 禁止：OpenSpec 提案正文、handoff/contracts、schema-1/3 evidence artifact 本体、
+  验收状态转移、final verification 结论、关键命令、敏感数据、最终闭环证据。
+- 对于治理 artifact，本地化输出可压缩为更短段落，但不得省略必填字段。
 
 ## Mandatory Entry Gate
 

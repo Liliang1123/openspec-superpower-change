@@ -18,6 +18,8 @@ Rules:
 - Switching from review-only to implementation requires explicit user confirmation.
 - “Review and fix”, “review then implement”, or any request to edit files is
   not Review-only; reclassify it through this change gate before modification.
+- 可选 token 压缩：当用户要求“少 token/更短/像 caveman 说”时，输出可精简；
+  但不得省略风险、边界、证据、状态与下一步动作。
 
 ## Discovery First
 
@@ -42,6 +44,8 @@ When active:
 9. Continue into the OpenSpec decision once language and boundaries are stable enough.
 
 If `grill-with-docs` is not installed, continue with these Phase 0 rules and tell the user the dedicated skill is unavailable.
+- `caveman` 只是语言压缩，不替代治理；OpenSpec 决策、handoff
+  生成、状态迁移、证据核验仍按本段规则执行。
 
 ## OpenSpec proposal
 

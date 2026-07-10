@@ -45,6 +45,21 @@
 Before Direct Change implementation, Preflight Review the scoped execution
 outline when it is more than a non-behavioral micro edit.
 
+## Token budget control
+
+- If user requests a shorter output, default to compact structure + one-line
+  conclusion.
+- Allowed compressed content:
+  - Gate 0 summary
+  - discovery findings list
+  - actionable findings with file+位置级别
+  - verification command list
+- Forbidden compression:
+  - 省略审计边界、openSpec/superpowers 切换依据或 `BLOCKED` 原因
+  - 省略证据角色、结果、文件路径或哈希的最小闭环字段
+  - 将 `PASS`/`FAIL`/`BLOCKED` 的语义替换为模糊描述
+  - 用 caveman 语气替代 OpenSpec、handoff 或 final-review 的结构化文本
+
 ## Gate 0 pattern
 
 Use before any state-changing action:
