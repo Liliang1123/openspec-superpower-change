@@ -77,9 +77,9 @@ to use compact evidence and Review.
 - [x] Run source/runtime quick validation, project validators, unittest, and diff checks.
 - [x] Run adversarial and natural-language routing forward-tests.
 - [x] Obtain independent routing, integration, and closure Review PASS; fix and re-review.
-- [ ] Reconcile and archive this OpenSpec change; run strict validation after archive.
-- [ ] Commit and push each repository separately under the user's existing authorization.
-- [ ] Delete the structured temporary backup only after publication checks pass.
+- [x] Reconcile and archive this OpenSpec change; run strict validation after archive.
+- [x] Commit and push each repository separately under the user's existing authorization.
+- [x] Delete the structured temporary backup only after publication checks pass.
 
 ## Plan Self-Review
 

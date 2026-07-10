@@ -86,11 +86,11 @@
 - 两仓 source unittest：OpenSpec `53/53`，Brief `48/48`。
 - 两仓 source/runtime validator 与 `quick_validate.py`：PASS。
 - 26 个 source/runtime 关键文件 byte-identical：PASS。
-- OpenSpec active change strict validation：PASS。
+- OpenSpec change 已归档；归档后 `--all --strict`：`1/1 PASS`。
 - 对抗用例覆盖 role/result、batch/attempt、source fingerprint、unsafe path、
   hash、symlink、blocked recovery 与 previous-status transition。
-- 临时结构化回滚备份在发布检查完成前保留于
-  `/private/tmp/two-codex-skills-v2-self-evolution-20260710-182410/`；发布成功后删除。
+- 两仓实施提交 push/tracking 确认后，临时结构化回滚备份已移入系统废纸篓，
+  runtime `.DS_Store`、测试副本和 Python cache 已清理。
 
 ## 已接受信任边界
 

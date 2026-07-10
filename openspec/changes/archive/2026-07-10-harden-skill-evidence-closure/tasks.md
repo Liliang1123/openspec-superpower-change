@@ -30,8 +30,8 @@
 - [x] 4.2 Run adversarial RED-to-GREEN cases and fresh routing forward-tests.
 - [x] 4.3 Complete independent routing, integration, and closure Reviews; fix and
   re-review every actionable finding.
-- [ ] 4.4 Reconcile this task list, archive the change, and validate OpenSpec after
+- [x] 4.4 Reconcile this task list, archive the change, and validate OpenSpec after
   archive.
 - [x] 4.5 Check final diffs, sensitive information, temporary files, and scope.
-- [ ] 4.6 Commit and push each repository separately, then remove the temporary
+- [x] 4.6 Commit and push each repository separately, then remove the temporary
   backup only after all publication checks pass.

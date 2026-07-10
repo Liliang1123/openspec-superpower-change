@@ -6,83 +6,118 @@ completion rules for the `openspec-superpower-change` and
 `codex-brief-antigravity-review` skill pair.
 ## Requirements
 ### Requirement: Deterministic skill routing
-The skill pair SHALL route state-changing development work through `openspec-superpower-change` and SHALL reserve standalone `codex-brief-antigravity-review` use for prompt/brief/checklist generation and read-only artifact review.
+The skill pair SHALL route state-changing development work, review-and-fix,
+workflow/template edits, OpenSpec authorization, and final completion decisions
+through `openspec-superpower-change`. It SHALL reserve standalone
+`codex-brief-antigravity-review` use for non-state-changing prompt/brief/checklist
+generation and ordinary read-only artifact review, plus Handoff-backed external
+batch governance after a valid handoff.
 
-#### Scenario: Standalone task prompt
-- **GIVEN** no implementation or file modification is requested
-- **WHEN** the user asks for an Antigravity task prompt
-- **THEN** `codex-brief-antigravity-review` uses its standalone lightweight path
-- **AND** no OpenSpec proposal or Handoff Contract is required
+#### Scenario: Ambiguous review-and-fix wording
+- **WHEN** a request includes both Review language and file modification or fixing
+- **THEN** `openspec-superpower-change` is the primary skill
+- **AND** the request is not handled as standalone lightweight Review
 
-#### Scenario: Review and fix
-- **WHEN** the user asks to review and then change implementation files
-- **THEN** the request enters `openspec-superpower-change`
-- **AND** it is not treated as standalone review
-
-#### Scenario: Handed-off external batch
-- **GIVEN** a valid canonical Handoff Contract exists
-- **WHEN** an external batch is dispatched, reviewed, or resumed
-- **THEN** `codex-brief-antigravity-review` governs that batch
-- **AND** it does not re-decide OpenSpec approval or risk
+#### Scenario: Final completion evidence
+- **WHEN** the user asks whether the whole implementation is complete
+- **THEN** `openspec-superpower-change` owns the decision
+- **AND** the brief skill may provide batch evidence but cannot authorize completion
 
 ### Requirement: Non-duplicated OpenSpec and Superpowers ownership
-The workflow SHALL use OpenSpec for the approved change contract and Superpowers for post-approval implementation discipline without requiring duplicate design approvals for the same decision.
+The workflow SHALL use OpenSpec as the single approved design contract and SHALL
+map applicable Superpowers discovery, planning, TDD, Review, and verification
+discipline onto that contract without creating a duplicate design approval or
+granting Git permission.
 
-#### Scenario: OpenSpec-backed implementation
-- **GIVEN** a proposal design and acceptance contract are approved
-- **WHEN** implementation planning begins
-- **THEN** `superpowers:writing-plans` creates the executable implementation plan
-- **AND** OpenSpec `tasks.md` remains a contract checklist rather than a replacement plan
+#### Scenario: OpenSpec-backed brainstorming
+- **WHEN** brainstorming applies to an OpenSpec-required change
+- **THEN** its decisions are recorded in the OpenSpec proposal/design
+- **AND** the same decision does not require a second `docs/superpowers/specs/`
+  artifact or approval
 
-#### Scenario: Lightweight direct change
-- **GIVEN** the change is non-behavioral or restores already-defined behavior
-- **WHEN** the compact path is selected
-- **THEN** no OpenSpec proposal, Handoff Contract, or large implementation plan is required by default
+#### Scenario: Plan contains Git steps
+- **GIVEN** the current user has not explicitly authorized Git mutation
+- **WHEN** a Superpowers plan is prepared for execution
+- **THEN** `git add`, `git commit`, and `git push` steps are removed or blocked
+- **AND** the plan itself does not count as authorization
 
 ### Requirement: Mandatory review correction loop
-Every implementation path SHALL complete verification and review before completion, and every blocking finding SHALL restart correction, verification, and review.
+Every implementation path SHALL complete a current-revision Preflight Review,
+verification, and post-implementation Review before completion. Every actionable
+finding SHALL restart the corresponding correction and Review loop.
 
-#### Scenario: Review fails
-- **WHEN** a review result is `FAIL`
-- **THEN** the same batch enters `needs-fix`
-- **AND** a new attempt produces non-overwriting Report and Review artifacts
-- **AND** the next batch cannot start
+#### Scenario: Preflight finding
+- **WHEN** a Plan or external Brief has an executable gap, placeholder, scope
+  conflict, missing command, or unauthorized Git step
+- **THEN** implementation or dispatch does not start
+- **AND** the artifact is revised and reviewed again
 
-#### Scenario: Review is blocked
-- **WHEN** required evidence or a dependency is unavailable
-- **THEN** the workflow records blocker ownership and a resume condition
-- **AND** resumes the same batch without reusing stale evidence after the condition is met
-
-#### Scenario: Final external batch passes
-- **WHEN** the final external batch review is `PASS`
-- **THEN** lifecycle becomes `awaiting-final-verification`
-- **AND** ownership returns to `openspec-superpower-change`
-- **AND** the task is not complete until final verification and review pass
+#### Scenario: Non-actionable observation
+- **WHEN** Review records an observation that requires no change
+- **THEN** it is explicitly classified as an accepted residual risk with an owner
+  or decision
+- **AND** it is not represented as an unresolved actionable finding
 
 ### Requirement: Canonical auditable handoff state
-Handoff-backed external execution SHALL use exactly one machine-readable state block in `docs/agent-collab/<change-id>/status.md` and SHALL preserve attempt history.
+Handoff-backed external execution SHALL use schema version 3 with exactly one
+canonical state block, non-empty critical checks, safe evidence references,
+sequential final-gate persistence, and attempt history.
 
-#### Scenario: Competing state copy
-- **WHEN** a Brief or Report embeds a second mutable marker block
-- **THEN** review is `BLOCKED`
-- **AND** the canonical `status.md` remains authoritative
+#### Scenario: Empty verification contract
+- **WHEN** any external Handoff has an empty or blank `step_critical` or
+  `final_critical` entry
+- **THEN** both validators reject the contract
 
-#### Scenario: Complete state
-- **WHEN** lifecycle is `complete`
-- **THEN** `final_verification` is `pass`
-- **AND** `final_review_result` is `pass`
-- **AND** `last_review_result` is `pass`
-- **AND** the next owner is the user
+#### Scenario: Final verification passes before final Review
+- **WHEN** final verification passes with non-empty evidence artifacts
+- **THEN** canonical status persists that PASS while final Review remains pending
+- **AND** completion is still forbidden
+
+#### Scenario: Complete without evidence
+- **WHEN** lifecycle claims `complete` without attempt Report, batch Review, final
+  verification, and final Review hashed artifact references
+- **THEN** both validators reject the contract
+
+#### Scenario: Stale or mislabeled evidence
+- **WHEN** an artifact manifest has the wrong role, result, batch, attempt, or
+  source revision for the claimed state
+- **THEN** runtime validation rejects it
+- **AND** Preflight/timeout evidence cannot substitute for batch Review PASS
+
+#### Scenario: Complete without previous canonical state
+- **WHEN** runtime validation receives a `complete` snapshot without the actual
+  immediately preceding canonical status
+- **THEN** it rejects the completion claim
+- **AND** the project still keeps exactly one canonical marker block
+
+#### Scenario: Blank blocker or unsafe artifact
+- **WHEN** blocker details are blank or an artifact path is absolute or traverses
+  outside the project
+- **THEN** both validators reject the contract
 
 ### Requirement: Executable validation without optional YAML dependency
-Project validators SHALL correctly parse their supported YAML subset without PyYAML and SHALL test invalid lifecycle transitions.
+Project validators SHALL enforce schema-3 semantics with and without PyYAML,
+reject Python booleans as positive integers, and keep single-repository tests
+independent of an absent sibling clone.
 
-#### Scenario: Boolean metadata without PyYAML
-- **GIVEN** PyYAML is unavailable
-- **WHEN** `allow_implicit_invocation: true` is parsed
-- **THEN** the fallback parser returns a boolean true
-- **AND** validation succeeds
+#### Scenario: Standalone repository clone
+- **GIVEN** the companion repository is not checked out beside the project
+- **WHEN** the default unittest suite runs
+- **THEN** local workflow tests still execute and pass
+- **AND** only explicit cross-repository parity checks are skipped
 
-#### Scenario: Invalid completion transition
-- **WHEN** a contract claims lifecycle `complete` without final verification and review passing
-- **THEN** both validators reject the contract
+### Requirement: OpenSpec completion reconciliation
+An OpenSpec-backed task SHALL reconcile contract tasks and repository closeout
+state before it is called closed.
+
+#### Scenario: Repository implementation is complete
+- **WHEN** all implementation, verification, and Review gates pass
+- **THEN** `tasks.md` is reconciled with no unexplained open task
+- **AND** required design/closeout documentation is updated
+- **AND** the change is archived when repository completion semantics allow it
+- **AND** strict validation passes after archive
+
+#### Scenario: Deployment or release remains
+- **WHEN** repository policy requires deployment or release before archival
+- **THEN** the change remains active with an explicit owner and resume condition
+- **AND** the workflow does not claim the contract is closed
