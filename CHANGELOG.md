@@ -8,6 +8,8 @@
 - Add runtime role/result/batch/attempt/source-fingerprint manifests, transition
   history validation, and OpenSpec task/archive closeout rules.
 - Strengthen adversarial routing/lifecycle tests and standalone-clone compatibility.
+- Add caveman output-compression boundary: keep caveman as a presentation-only mode and
+  prevent governance/closure fields from being compressed away.
 
 ## 0.1.0 - 2026-06-22
 
