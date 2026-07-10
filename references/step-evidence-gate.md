@@ -62,10 +62,16 @@ Gate 0 must happen before file modification, state-changing command, implementat
   layers.
 - External Handoff-backed Review is the batch review gate and must not be
   duplicated merely for ceremony.
-- `FAIL` returns to the same scope for fix -> verification -> Review.
+- Every actionable finding, regardless of severity label, returns to the same
+  scope for fix -> verification -> Review. A non-actionable observation is
+  recorded separately as an accepted residual risk with an owner or decision.
 - `BLOCKED` records owner and resume condition; after recovery, refresh evidence
   and Review the same scope again.
 - No completion claim is allowed without Review PASS.
+- External completion additionally requires runtime-validated hashed references
+  for the attempt Report, batch Review, final verification manifest, and final
+  Review. Their schema-1 manifests bind role/result/change/batch/attempt/source
+  fingerprint, and `complete` must validate against the actual previous status.
 
 ## Interrupted / Dirty Diff Audit
 

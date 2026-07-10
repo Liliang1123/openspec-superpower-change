@@ -12,7 +12,8 @@ Use this workflow when OpenSpec is required.
    - `openspec/changes/<change-id>/design.md` when the change is cross-cutting, performance-sensitive, migration-heavy, or architecturally meaningful;
    - one or more spec deltas under `openspec/changes/<change-id>/specs/...`.
 6. Validate with `openspec validate <change-id> --strict`.
-7. Present the proposal summary and wait for user approval before code changes.
+7. Present the proposal summary and exact `change-id`; record explicit user
+   approval of that scoped contract before code changes.
 
 When `superpowers:brainstorming` is needed, use it to clarify alternatives and
 write the accepted decisions into OpenSpec `design.md`/spec deltas. The approved

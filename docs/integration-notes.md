@@ -12,11 +12,19 @@ When OpenSpec is required, brainstorming decisions are recorded in the
 OpenSpec proposal/design. OpenSpec approval satisfies the design approval; do
 not create a duplicate Superpowers design artifact for the same decision.
 
+`references/superpowers-adapter.md` also makes plan Git steps conditional on
+current user authorization and requires Plan/Brief Preflight Review before
+execution without duplicating post-implementation Review.
+
 ## codex-brief-antigravity-review
 
 This companion owns standalone task-prompt/diff review and Handoff-backed
 external Brief/Report/Review attempts. It does not own change classification or
 final completion. Final external batch PASS returns here for final verification.
+Schema 3 binds Report/Review/final evidence through project-relative paths and
+SHA-256. Each file also carries a schema-1 manifest for role, result, change,
+batch, attempt, and source canonical revision/SHA-256. A complete transition is
+validated against the actual previous status before the router may close it.
 
 ## grill-with-docs
 

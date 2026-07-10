@@ -17,5 +17,7 @@
 
 ## Approval Status
 
+- Change-id presented to user:
+- Strict validation result:
 - [ ] Proposal reviewed
-- [ ] Approved for implementation
+- [ ] This specific scoped change-id approved for implementation

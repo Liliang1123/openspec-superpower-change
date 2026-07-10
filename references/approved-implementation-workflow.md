@@ -13,6 +13,9 @@ classified and authorized an implementation that will use an external agent.
 4. OpenSpec `tasks.md` tracks contract progress; it does not replace the plan.
 5. A compact Direct Change needs no large plan unless complexity justifies it.
 
+Follow `references/superpowers-adapter.md`; a generated plan does not grant Git
+permission and must not create a second design approval.
+
 ## Plan And Evidence Granularity
 
 - Group work by complete business slice, not by file count or technical layer.
@@ -23,6 +26,23 @@ classified and authorized an implementation that will use an external agent.
 - Use `superpowers:systematic-debugging` before changing unexplained failures.
 - Use `superpowers:test-driven-development` for behavior changes, not for a
   test-only assertion of already-defined behavior.
+
+## Plan And Brief Preflight Review
+
+Before inline implementation or external dispatch, Review the current Plan or
+Brief revision for contract coverage, placeholders, allowed scope, production
+wiring where applicable, acceptance, exact verification commands, evidence
+profile, rollback/stop conditions, branch/worktree choice, and Git authority.
+
+- `compact` may use a focused inline Preflight Review.
+- `standard` and `strict` require a distinct critical pass.
+- Preflight uses only `PASS` or `BLOCKED`. Any actionable finding is
+  `BLOCKED`; revise the artifact and Review it again. Reserve `FAIL` for
+  implementation or post-implementation Review, where executed behavior can
+  actually be wrong.
+- Preflight `PASS` authorizes execution only; it is not design re-approval,
+  implementation Review, or completion evidence.
+- Rerun only when the artifact revision changes.
 
 ## Inline Implementation
 
@@ -37,9 +57,10 @@ classified and authorized an implementation that will use an external agent.
 
 ## External Implementation
 
-1. Create one schema-version-2 Handoff Contract at canonical `status.md`.
-2. A Direct Change may use `compact`/`single`; OpenSpec-backed work uses its
-   approved evidence and batch profiles.
+1. Create one schema-version-3 Handoff Contract at canonical `status.md`.
+2. A low-risk Direct Change may use `compact`/`single`; approved public/API
+   restoration remains `strict`, and OpenSpec-backed work uses its approved
+   evidence and batch profiles.
 3. Hand Brief/Report/Review attempts to `codex-brief-antigravity-review`.
 4. The external Review is the batch code-review gate; do not duplicate it with
    a second Superpowers review for the same batch.
@@ -47,19 +68,39 @@ classified and authorized an implementation that will use an external agent.
    fresh attempt evidence.
 6. Non-final `PASS` advances one batch. Final `PASS` sets
    `awaiting-final-verification` and returns ownership to this router.
+7. Brief and Report carry the same execution-revision canonical SHA-256. A
+   mismatch blocks Review and batch promotion.
+8. Every evidence-bearing transition validates its proposed status against the
+   actual prior canonical status before replacement; schema-1 manifests bind
+   role/result/change/batch/attempt/source revision/SHA-256.
 
 ## Final Completion
 
 After all inline slices pass, or after external handback:
 
-1. Run fresh `final_critical` once. Later implementation changes invalidate it.
+1. Run fresh `final_critical` once and persist its hashed evidence manifest in a
+   new `awaiting-final-verification` revision. Later implementation changes
+   invalidate it.
 2. Review final diff, scope, tests/logs, documentation/contract consistency,
    sensitive information, temporary files, and unrelated changes.
 3. If Review or verification fails, return to implementation and repeat the
    fix -> verify -> Review loop.
-4. Invoke `superpowers:verification-before-completion` before any success claim.
-5. Mark external lifecycle `complete` only when final verification and Review
-   both pass; otherwise report `FAIL` or `BLOCKED` with the next owner/action.
+4. Persist final Review evidence, then mark external lifecycle `complete` only
+   when attempt Report, batch Review, final verification, and final Review
+   artifacts are present and runtime-validated with `--previous-status`.
+5. Invoke `superpowers:verification-before-completion` before any success claim.
+
+## OpenSpec closeout
+
+For OpenSpec-backed work after implementation gates pass:
+
+1. Reconcile `tasks.md`; no unexplained unchecked task may remain.
+2. Update project-required design/closeout documentation.
+3. If repository completion semantics allow archival now, archive the change and
+   run strict validation after archive.
+4. If deployment or release is still required, keep the change active, record
+   owner/resume condition, and do not call the contract closed.
+5. Any closeout validation or Review finding returns to correction and Review.
 
 For OpenSpec-backed multi-step work, skip the Superpowers plan only when the
 user explicitly says to skip it. Compact Direct Change does not require a large

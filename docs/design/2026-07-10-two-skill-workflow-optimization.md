@@ -1,7 +1,7 @@
 # 两个 Codex 全局 Skill 工作流优化设计
 
 文档类型：架构与工作流优化设计
-日志及版本：2026-07-10 v1.0
+日志及版本：2026-07-10 v1.1（schema 3 与 evidence profile 口径校正）
 
 ## 结论
 
@@ -30,7 +30,7 @@
 | 只写/优化 prompt、Brief、checklist | Brief standalone | 否 | 否 | 否 |
 | 普通 diff/Report/evidence 只读 Review | Brief standalone | 否 | 否 | 否 |
 | Review 并修复、任何文件修改 | Change Gate | 按边界判断 | 按变更类型 | 仅外部执行 |
-| 局部恢复既有行为 | Change Gate / Direct Change | 否 | TDD/debugging/verification 按需 | 外部执行时 compact |
+| 局部恢复既有行为 | Change Gate / Direct Change | 否 | TDD/debugging/verification 按需 | 低风险默认 compact；公开/API restoration 仍 strict |
 | 新能力、API/schema、安全、workflow lifecycle | Change Gate / OpenSpec | 是 | 批准后 plan/TDD/review/verification | 外部执行时需要 |
 | 已有有效 Handoff 的 dispatch/resume/Report Review | Brief handed-off | 沿用既有决定 | 批次 Review 已承担 review gate | 是 |
 | Skill trigger/routing/evidence/completion 变化 | Change Gate / Major Self-Evolution | 是 | writing-skills + RED/GREEN + review | 按执行方式 |
@@ -56,7 +56,11 @@ PASS 最终 -> awaiting-final-verification -> router final verification + final 
 两者 PASS -> complete（终态）
 ```
 
-Canonical state 只存在于 `docs/agent-collab/<change-id>/status.md`。Schema v2 使用 `contract_revision`、`attempt`、`last_review_result`、`final_review_result`、`final_verification` 和 blocker 字段；attempt 产物不得覆盖历史。
+Canonical state 只存在于 `docs/agent-collab/<change-id>/status.md`。Schema v3
+使用 `contract_revision`、`attempt`、Review/final result、blocker 与四个 hashed
+artifact reference；artifact 内嵌 schema-1 role/result/change/batch/attempt/source
+fingerprint manifest。attempt 产物不得覆盖历史，`complete` 运行态验证必须
+核对实际 previous status。
 
 ## 证据与验证
 
@@ -74,4 +78,4 @@ Canonical state 只存在于 `docs/agent-collab/<change-id>/status.md`。Schema 
 
 - 已完成两仓及两份 runtime skill 的 validator、`quick_validate.py`、38 个回归测试、parity 和三轮独立 Review。
 - 已提交并 push：`openspec-superpower-change@e073ac7`、`codex-brief-antigravity-review@c888eb0`。
-- 临时备份清理被本机安全 hook 拒绝，需手动执行：`rm -rf /private/tmp/two-codex-skills-self-evolution-20260710-064702`。
+- 临时备份已在验证和 push 完成后清理，无遗留备份待办。

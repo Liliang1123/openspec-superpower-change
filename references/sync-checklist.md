@@ -13,9 +13,13 @@ This checklist applies to:
 
 ## Required paths
 
-- Local runtime skill: `/Users/elvis/.codex/skills/openspec-superpower-change`
-- Open-source project: `/Users/elvis/file/develop/opensource/openspec-superpower-change`
-- Related open-source history project: `/Users/elvis/file/develop/opensource/codex-brief-antigravity-review`
+Set these for the current checkout instead of hardcoding a user's home path:
+
+```bash
+CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+OPENSPEC_SKILL_SOURCE="${OPENSPEC_SKILL_SOURCE:-$PWD}"
+BRIEF_SKILL_SOURCE="${BRIEF_SKILL_SOURCE:-$(dirname "$PWD")/codex-brief-antigravity-review}"
+```
 
 ## Pre-change checklist
 
@@ -26,7 +30,7 @@ This checklist applies to:
 5. Check the open-source repo is clean before editing:
 
 ```bash
-git -C /Users/elvis/file/develop/opensource/openspec-superpower-change status -sb
+git -C "$OPENSPEC_SKILL_SOURCE" status -sb
 ```
 
 ## Sync checklist
@@ -35,10 +39,14 @@ git -C /Users/elvis/file/develop/opensource/openspec-superpower-change status -s
 2. Apply the same logical change to the secondary tree unless explicitly out of scope.
 3. Compare key files when both trees should stay aligned:
    - `SKILL.md`
+   - `references/handoff-contract.md`
+   - `references/superpowers-adapter.md`
    - `references/self-evolution-rule.md`
    - `references/step-evidence-gate.md`
    - `references/sync-checklist.md`
    - `scripts/validate_core_gates.py`
+   - companion Brief `SKILL.md`, evidence templates, Handoff Contract, and
+     `scripts/validate_templates.py`
 4. Do not force byte-for-byte equality when local runtime needs stricter execution details than the open-source project.
 5. Do require logical equality for:
    - Non-negotiables;
@@ -53,10 +61,14 @@ git -C /Users/elvis/file/develop/opensource/openspec-superpower-change status -s
 Run for both local and open-source copies when present:
 
 ```bash
-"${PYTHON_BIN:-python3}" /Users/elvis/.codex/skills/.system/skill-creator/scripts/quick_validate.py /Users/elvis/.codex/skills/openspec-superpower-change
-PYTHONDONTWRITEBYTECODE=1 python3 /Users/elvis/.codex/skills/openspec-superpower-change/scripts/validate_core_gates.py /Users/elvis/.codex/skills/openspec-superpower-change
-"${PYTHON_BIN:-python3}" /Users/elvis/.codex/skills/.system/skill-creator/scripts/quick_validate.py /Users/elvis/file/develop/opensource/openspec-superpower-change
-PYTHONDONTWRITEBYTECODE=1 python3 /Users/elvis/file/develop/opensource/openspec-superpower-change/scripts/validate_core_gates.py /Users/elvis/file/develop/opensource/openspec-superpower-change
+"${PYTHON_BIN:-python3}" "$CODEX_HOME/skills/.system/skill-creator/scripts/quick_validate.py" "$CODEX_HOME/skills/openspec-superpower-change"
+PYTHONDONTWRITEBYTECODE=1 python3 "$CODEX_HOME/skills/openspec-superpower-change/scripts/validate_core_gates.py" "$CODEX_HOME/skills/openspec-superpower-change"
+"${PYTHON_BIN:-python3}" "$CODEX_HOME/skills/.system/skill-creator/scripts/quick_validate.py" "$OPENSPEC_SKILL_SOURCE"
+PYTHONDONTWRITEBYTECODE=1 python3 "$OPENSPEC_SKILL_SOURCE/scripts/validate_core_gates.py" "$OPENSPEC_SKILL_SOURCE"
+"${PYTHON_BIN:-python3}" "$CODEX_HOME/skills/.system/skill-creator/scripts/quick_validate.py" "$CODEX_HOME/skills/codex-brief-antigravity-review"
+PYTHONDONTWRITEBYTECODE=1 python3 "$CODEX_HOME/skills/codex-brief-antigravity-review/scripts/validate_templates.py" "$CODEX_HOME/skills/codex-brief-antigravity-review"
+"${PYTHON_BIN:-python3}" "$CODEX_HOME/skills/.system/skill-creator/scripts/quick_validate.py" "$BRIEF_SKILL_SOURCE"
+PYTHONDONTWRITEBYTECODE=1 python3 "$BRIEF_SKILL_SOURCE/scripts/validate_templates.py" "$BRIEF_SKILL_SOURCE"
 ```
 
 Set `PYTHON_BIN` to an interpreter with PyYAML. Run both repositories'
@@ -84,7 +96,7 @@ After validation and required forward-tests pass:
 
 1. Remove temporary structured backups created for the update.
 2. Remove `.bak.*` files from the runtime skill and open-source working trees.
-3. Remove discoverable `*.backup*` skill directories from `/Users/elvis/.codex/skills/`.
+3. Remove discoverable `*.backup*` skill directories from `$CODEX_HOME/skills/`.
 4. Keep a temporary backup only when validation fails, rollback is pending, or the
    user explicitly asks to retain it.
 5. Treat the open-source git history as the long-term version history; do not
@@ -95,8 +107,8 @@ After validation and required forward-tests pass:
 1. Review diff:
 
 ```bash
-git -C /Users/elvis/file/develop/opensource/openspec-superpower-change diff --stat
-git -C /Users/elvis/file/develop/opensource/openspec-superpower-change diff
+git -C "$OPENSPEC_SKILL_SOURCE" diff --stat
+git -C "$OPENSPEC_SKILL_SOURCE" diff
 ```
 
 2. Commit with a clear message.

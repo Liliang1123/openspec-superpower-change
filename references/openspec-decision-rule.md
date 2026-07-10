@@ -19,11 +19,15 @@ Create or update an OpenSpec change when the request involves:
 
 Agent runtime, tool exposure, cache strategy, request routing, skill routing, workflow lifecycle, sandbox/security boundary, and operator-visible behavior changes default to OpenSpec-required or Discovery First. Do not classify them as Direct Change merely because the user reports a bug.
 
-OpenSpec may be skipped only when an approved existing contract explicitly covers the behavior and the implementation is a narrow restoration of that contract. State that assumption in Gate 0.
+For public/user/operator-visible behavior, OpenSpec may be skipped only when an
+approved existing spec or equivalent project-authoritative contract explicitly
+covers the behavior, Gate 0 records its exact path, and implementation narrowly
+restores that contract without schema, compatibility, or lifecycle changes.
 
 Skip OpenSpec only for:
 
-- bug fixes restoring intended behavior;
+- internal bug fixes restoring intended behavior, or public restoration meeting
+  the approved-contract rule above;
 - small config-only changes without user-visible, operator-visible, security, deployment, recovery, or performance-semantics impact;
 - comments, formatting, or typo fixes;
 - docs-only updates without contract impact;

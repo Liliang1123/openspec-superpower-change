@@ -24,9 +24,11 @@ read local instructions
 -> create or update OpenSpec proposal when required
 -> wait for approval before implementation
 -> create Superpowers implementation plan for approved work
+-> Preflight Review the current Plan/Brief revision before execution
 -> execute business slices with TDD/debugging and Step Evidence Gate
 -> verify -> Review -> fix and repeat until Review PASS
--> run fresh final verification and final diff/scope Review
+-> persist fresh final verification evidence and run final diff/scope Review
+-> reconcile OpenSpec tasks, archive when appropriate, and validate after archive
 -> report changed files, evidence, risks, and next steps
 ```
 
@@ -48,6 +50,7 @@ For OpenSpec-backed work:
 - Superpowers implementation plan: `docs/superpowers/plans/YYYY-MM-DD-<change-id>.md`.
 - Step Evidence Gate signoff notes for gated implementation steps.
 - Verification evidence and Review PASS before completion.
+- For external work, schema-3 hashed Report/Review/final evidence references.
 
 Optional discovery artifacts:
 

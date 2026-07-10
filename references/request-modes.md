@@ -49,7 +49,9 @@ Use when the request requires an approved change contract. Create proposal artif
 
 ## Approved implementation
 
-Use only after the user approves an OpenSpec-backed proposal. Create a Superpowers implementation plan before implementation unless the user explicitly says to skip it.
+Use only after the user approves the specific OpenSpec change-id and scoped
+contract. Create and Preflight Review a Superpowers implementation plan before
+implementation unless the user explicitly says to skip the plan.
 
 ## Direct Change
 
@@ -65,9 +67,14 @@ Direct Change is forbidden when the change touches any of:
 - security or sandbox boundary;
 - cross-module behavior or multi-file runtime changes.
 
-These cases must enter Discovery First or OpenSpec proposal unless an approved existing contract explicitly covers the behavior. A localized bugfix label is not enough to bypass this exclusion.
+These cases must enter Discovery First or OpenSpec proposal unless an approved
+existing spec or equivalent project-authoritative contract explicitly covers the
+exact behavior, Gate 0 records that path, and the restoration adds no contract,
+schema, compatibility, or lifecycle behavior. A README, issue, test, current
+implementation, or localized bugfix label is not automatically that contract.
 
 If the user requests an external agent for an otherwise valid Direct Change,
-this router creates a compact Handoff Contract and then delegates the batch to
-`codex-brief-antigravity-review`; external execution does not upgrade the work
-to OpenSpec by itself.
+this router creates a profile-appropriate Handoff Contract and then delegates
+the batch to `codex-brief-antigravity-review`. Low-risk Direct Change defaults
+to `compact`; an approved public/API restoration remains `strict`. External
+execution does not upgrade the work to OpenSpec by itself.

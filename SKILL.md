@@ -1,6 +1,6 @@
 ---
 name: openspec-superpower-change
-description: "Use when a development change may modify files or behavior, needs OpenSpec or Direct Change classification, requires Superpowers execution routing, changes a skill workflow, or needs evidence-based final completion; also trigger on 开发变更、变更准入、OpenSpec、实施闭环、Skill 自演进."
+description: "Use when a request may modify files or behavior, asks review-and-fix, changes skill/workflow/template files, needs OpenSpec or Direct Change classification or Superpowers routing, or decides evidence-based final completion; also trigger on 开发变更、变更准入、OpenSpec、Review并修复、实施闭环、Skill自演进."
 ---
 
 # OpenSpec + Superpowers Change Gate
@@ -28,15 +28,16 @@ task heavy. Inspection-only reads are allowed before Gate 0 to classify work.
 
 | Request | Primary skill / mode |
 |---|---|
-| Modify, fix, implement, change behavior, or dispatch without a valid Handoff | This skill |
-| Review architecture, OpenSpec need, implementation authorization, or completion evidence | This skill / Review-only |
+| Modify, fix, implement, change behavior, change workflow/template files, or dispatch without a valid Handoff | This skill |
+| Review architecture, OpenSpec need, implementation authorization, or whole-task completion evidence | This skill / Review-only |
 | Write or refine a task prompt, Brief, or checklist without changing files | `codex-brief-antigravity-review` / standalone |
 | Read-only review of a diff, Report, or evidence without fixing it | `codex-brief-antigravity-review` / standalone |
 | Execute, resume, or review a batch with a valid Handoff Contract | `codex-brief-antigravity-review` / handed-off |
 
 “Review and fix” is implementation, not Review-only. A Direct Change that uses
-an external agent still enters here first; create a compact Handoff Contract
-before handing execution to the governor.
+an external agent still enters here first; create a profile-appropriate Handoff
+Contract before handing execution to the governor. Only work that remains
+low-risk may default to `compact`.
 
 When a valid Handoff already exists, its dispatch/resume/review route takes
 priority and goes directly to `codex-brief-antigravity-review`.
@@ -53,9 +54,9 @@ Read `SKILL.md` first, then only the matching references:
 | Task | Required references |
 |---|---|
 | Review-only / route review | `references/request-modes.md`, `references/response-patterns.md` |
-| Implementation / bugfix | `references/request-modes.md`, `references/openspec-decision-rule.md`, `references/step-evidence-gate.md` |
+| Implementation / bugfix | `references/request-modes.md`, `references/openspec-decision-rule.md`, `references/step-evidence-gate.md`, `references/superpowers-adapter.md` |
 | Direct Change | `references/direct-change-rule.md`, `references/step-evidence-gate.md` |
-| Runtime / tool / workflow change | `references/openspec-decision-rule.md`, `references/proposal-workflow.md`, `references/approved-implementation-workflow.md` |
+| Runtime / tool / workflow change | `references/openspec-decision-rule.md`, `references/proposal-workflow.md`, `references/approved-implementation-workflow.md`, `references/superpowers-adapter.md` |
 | External execution | `references/approved-implementation-workflow.md`, `references/handoff-contract.md` |
 | Skill self-evolution | `references/self-evolution-rule.md`, `references/step-evidence-gate.md` |
 | Runtime/source sync | `references/sync-checklist.md` |
@@ -66,12 +67,17 @@ OpenSpec is required for new functionality, architecture or pattern changes,
 public/operator-visible behavior, security, migrations, API/schema/data
 lifecycle, broad refactors, runtime control flow, routing, or workflow lifecycle.
 
-OpenSpec may be skipped for localized restoration of defined behavior, small
-config-only changes, typo/comment/formatting updates, non-contractual docs, or
-tests for existing behavior. Changing a skill's trigger, routing, required
+OpenSpec may be skipped for localized internal restoration of defined behavior,
+small config-only changes, typo/comment/formatting updates, non-contractual docs,
+or tests for existing behavior. Changing a skill's trigger, routing, required
 artifact, state transition, evidence rule, or completion rule is workflow
 behavior and requires OpenSpec. Editorial wording that changes none of those
 contracts may use Direct Change.
+
+A public/user/operator-visible restoration may use Direct Change only when an
+approved existing spec or equivalent project-authoritative contract explicitly
+defines the intended behavior, Gate 0 records its exact path, and no contract,
+schema, compatibility, or lifecycle behavior changes. Otherwise use OpenSpec.
 
 Do not implement OpenSpec-required work before approval.
 
@@ -88,20 +94,25 @@ Do not implement OpenSpec-required work before approval.
 - `standard` and `strict` inline work requires a distinct Review pass.
 - A Handoff-backed external Review is the batch code-review gate; do not add a
   duplicate review for the same batch.
+- Before implementation or dispatch, run a current-revision Plan/Brief
+  **Preflight Review**. Any finding revises the artifact and restarts preflight.
+  Preflight authorizes execution only; it is not implementation Review.
 
 Every implementation follows:
 
 ```text
-Implement -> Verify -> Review
+Plan/Brief Preflight PASS -> Implement -> Verify -> Review
 Review FAIL -> Fix same scope -> Verify -> Review again
 Review BLOCKED -> Resolve/decide -> refresh evidence -> Review again
 Review PASS -> next slice, or final verification when no slice remains
 ```
 
 The final external batch `PASS` means `awaiting-final-verification`, not task
-completion. This router then runs fresh `final_critical`, reviews the final
-diff/scope/security or sensitive-data concerns, and fixes/reviews again if any
-finding remains. Completion requires final Review PASS and fresh verification.
+completion. This router persists fresh `final_critical` evidence before final
+Review, then reviews final diff/scope/security or sensitive-data concerns and
+fixes/reviews again for every actionable finding. Completion requires hashed
+batch/final evidence, final Review PASS, OpenSpec task reconciliation, and the
+repository-appropriate archive/validation closeout.
 
 ## Evidence Profiles
 
@@ -119,15 +130,18 @@ finding remains. Completion requires final Review PASS and fresh verification.
 |---|---|
 | Ambiguous creative alternatives before a contract | `superpowers:brainstorming` |
 | Multi-step approved implementation | `superpowers:writing-plans` |
+| Execute a reviewed plan | `superpowers:subagent-driven-development` or `superpowers:executing-plans` |
+| Isolate work unless current branch use is explicitly authorized | `superpowers:using-git-worktrees` |
 | Feature, bugfix, refactor, behavior change | `superpowers:test-driven-development` |
 | Unexplained failure | `superpowers:systematic-debugging` |
 | Inline standard/strict implementation review | `superpowers:requesting-code-review` |
 | Completion/fixed/passing/ready claim | `superpowers:verification-before-completion` |
 | Editing a skill | `superpowers:writing-skills` |
+| Complete a branch workflow | `superpowers:finishing-a-development-branch` |
 
-When OpenSpec is required, record brainstorming decisions in the OpenSpec
-proposal/design. Its explicit approval is the design approval; do not generate
-and approve a second `docs/superpowers/specs/` artifact for the same decision.
+Apply `references/superpowers-adapter.md`. It maps Superpowers artifact and
+permission defaults onto this workflow without weakening brainstorming, TDD,
+debugging, Review, or verification discipline.
 
 ## Self-Evolution
 
@@ -150,6 +164,11 @@ an approved OpenSpec change.
 - Do not gate every TDD micro-step; do not skip the business-slice evidence gate.
 - Do not advance with `FAIL`, `BLOCKED`, stale evidence, or unresolved findings.
 - Do not claim completion without fresh verification evidence and Review PASS.
+- Do not accept empty critical commands, blank blocker details, evidence-free
+  external PASS, or an atomic final-verification/final-Review completion update.
+- External artifacts must carry the schema-1 evidence manifest binding role,
+  result, change, batch, attempt, and source canonical revision/SHA-256. Runtime
+  `complete` validation requires the actual previous status.
 - Do not duplicate mutable Handoff Contract blocks outside canonical `status.md`.
 - Self-evolution cannot weaken approval, evidence, review, verification, or
   user-control boundaries.

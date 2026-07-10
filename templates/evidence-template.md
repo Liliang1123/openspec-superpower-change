@@ -25,6 +25,9 @@
 |---|---|
 | `<command>` | pass/fail |
 
+- Evidence path:
+- Evidence SHA-256:
+
 ## Self-review
 
 - Scope drift:
@@ -32,6 +35,7 @@
 - Test-only claim:
 - Docs-only claim:
 - Cross-artifact consistency:
+- Actionable findings resolved and re-reviewed:
 
 ## Residual risk
 

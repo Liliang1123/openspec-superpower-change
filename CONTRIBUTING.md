@@ -25,3 +25,5 @@ Before submitting a change, check:
 - Long content is referenced from `SKILL.md` instead of duplicated.
 - Examples match the documented lightweight, standard, and strict paths.
 - Evidence templates still preserve commands, results, risks, and rollback notes.
+- Schema-3 lifecycle, evidence-file validation, and adversarial tests pass.
+- OpenSpec tasks and archive state are reconciled before closeout.

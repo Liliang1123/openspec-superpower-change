@@ -2,7 +2,7 @@
 
 ## Scenario
 
-Fix a localized bug that restores documented behavior.
+Fix a localized internal bug that restores already-defined behavior.
 
 ## Path
 
@@ -12,6 +12,7 @@ Direct Change with compact Step Evidence Gate.
 
 - Confirm no new behavior, architecture, security, migration, or public contract change.
 - Reproduce or inspect the failure.
+- Preflight Review the scoped execution outline before implementation.
 - Use TDD when practical.
 - Make the smallest code change.
 - Run targeted tests.

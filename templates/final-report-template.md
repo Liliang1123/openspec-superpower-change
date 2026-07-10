@@ -20,12 +20,20 @@
 |---|---|
 | `<command>` | pass/fail |
 
+- Final verification manifest: `<project-relative path>`
+- SHA-256: `<64 lowercase hex>`
+
 ## Review
 
 - Review profile: compact / standard / strict
 - Review artifact or inline evidence:
 - Result: PASS / FAIL / BLOCKED
 - Fix/re-review rounds:
+- Final Review artifact and SHA-256:
+
+The final Review is a separate Review artifact carrying a schema-1
+`final-review` manifest. Do not reuse the final-verification manifest or this
+closure report as final Review evidence.
 
 ## Evidence
 
@@ -35,6 +43,13 @@
 
 ## Rollback
 
+## OpenSpec closeout
+
+- `tasks.md` reconciled: yes/no/not-applicable
+- Archive state: archived / active with owner and resume condition / not-applicable
+- Post-archive strict validation:
+
 ## Next steps
 
-Completion is allowed only when final verification and Review both pass.
+Completion is allowed only when final verification and Review both pass, their
+required evidence is runtime-validated, and OpenSpec closeout is reconciled.

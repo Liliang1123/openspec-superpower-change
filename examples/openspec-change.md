@@ -16,6 +16,8 @@ Strict path.
 - Run strict validation.
 - Stop for approval before implementation.
 - After approval, create Superpowers implementation plan.
+- Preflight Review the current plan revision before implementation.
 - Execute complete business slices with Step Evidence Gate and formal verification.
 - Review each required slice; findings return to fix, re-verification, and Review.
 - Run fresh final verification and final diff/scope Review before completion.
+- Reconcile tasks, archive when repository semantics allow, and validate after archive.

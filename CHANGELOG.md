@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.0 - 2026-07-10
+
+- Add Plan/Brief Preflight Review and an explicit OpenSpec-aware Superpowers adapter.
+- Upgrade external Handoff state to schema 3 with hashed evidence references and sequential final gates.
+- Reject blank verification/blocker values, boolean integers, and readonly-field drift.
+- Add runtime role/result/batch/attempt/source-fingerprint manifests, transition
+  history validation, and OpenSpec task/archive closeout rules.
+- Strengthen adversarial routing/lifecycle tests and standalone-clone compatibility.
+
 ## 0.1.0 - 2026-06-22
 
 - Initialize `openspec-superpower-change` as a standalone open-source skill project.

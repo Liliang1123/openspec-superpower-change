@@ -5,7 +5,8 @@
 1. State that no files will be changed.
 2. State whether the described change would require OpenSpec if implemented.
 3. Summarize unclear terms, risks, missing artifacts, approval gates, and recommendations.
-4. If asked, provide an implementation-ready prompt for another agent.
+4. If architecture Review also needs a handoff summary, include it as a
+   secondary output without treating it as a standalone governed Brief.
 5. For standalone prompt wording or ordinary diff/Report review, route to
    `codex-brief-antigravity-review` instead of creating change-gate artifacts.
 
@@ -32,12 +33,17 @@
 ## Direct change requests
 
 1. State that OpenSpec is not required and briefly why.
-2. Apply compact Step Evidence Gate before editing when the direct change is gated.
+2. Apply the profile-appropriate Step Evidence Gate before editing when the
+   direct change is gated. Low-risk Direct Change normally uses `compact`;
+   approved public/API restoration remains `strict`.
 3. Use TDD or systematic debugging as applicable, then implement the scoped change.
 4. Run targeted official verification.
-5. For gated direct changes, report compact Step Evidence Gate results.
+5. For gated direct changes, report results at the selected evidence profile.
 6. Run focused diff/self-review; findings return to fix and re-verification.
 7. Report changed files, tests, Review result, and verification evidence.
+
+Before Direct Change implementation, Preflight Review the scoped execution
+outline when it is more than a non-behavioral micro edit.
 
 ## Gate 0 pattern
 

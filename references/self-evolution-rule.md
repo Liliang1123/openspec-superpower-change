@@ -44,15 +44,19 @@ For Major self-evolution, the first deliverable must be a review draft plan, not
 - validation and forward-test plan;
 - rollback path.
 
-Implementation starts only after user approval or an explicitly approved change contract. Approval must be recorded in the response before editing.
+Major Self-Evolution starts only after a specific OpenSpec change exists, passes
+strict validation, and the user explicitly approves that change-id and scoped
+contract. A generic request to improve the skill, approval of a review draft, or
+runtime edit permission does not substitute for approval of the concrete
+OpenSpec change. Record the approval before editing; scope expansion requires a
+new approval decision.
 
 ## Backup lifecycle
 
 Backups created for self-evolution are temporary rollback aids, not history.
-Long-term history must be managed by the open-source repositories:
-
-- `/Users/elvis/file/develop/opensource/openspec-superpower-change`
-- `/Users/elvis/file/develop/opensource/codex-brief-antigravity-review`
+Long-term history must be managed by the configured source repositories for
+`openspec-superpower-change` and `codex-brief-antigravity-review`, not by runtime
+backup directories.
 
 Rules:
 
@@ -61,7 +65,8 @@ Rules:
 - After validation/forward-test pass and the final state is synced to the
   open-source repo, delete temporary backups, `.bak.*` files, and discoverable
   `*.backup*` skill directories.
-- Never leave backup skill directories under `/Users/elvis/.codex/skills/`;
+- Never leave backup skill directories under
+  `${CODEX_HOME:-$HOME/.codex}/skills/`;
   they can be discovered as duplicate skills.
 - If validation fails or rollback is needed, keep the backup only until rollback
   or user decision is complete, then clean it up.
@@ -71,11 +76,13 @@ Before editing, create a timestamped backup of the runtime skill. Run
 project validator usable without PyYAML. For example:
 
 ```bash
-"${PYTHON_BIN:-python3}" /Users/elvis/.codex/skills/.system/skill-creator/scripts/quick_validate.py /Users/elvis/.codex/skills/openspec-superpower-change
-PYTHONDONTWRITEBYTECODE=1 python3 /Users/elvis/.codex/skills/openspec-superpower-change/scripts/validate_core_gates.py /Users/elvis/.codex/skills/openspec-superpower-change
+"${PYTHON_BIN:-python3}" "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-creator/scripts/quick_validate.py" "${CODEX_HOME:-$HOME/.codex}/skills/openspec-superpower-change"
+PYTHONDONTWRITEBYTECODE=1 python3 "${CODEX_HOME:-$HOME/.codex}/skills/openspec-superpower-change/scripts/validate_core_gates.py" "${CODEX_HOME:-$HOME/.codex}/skills/openspec-superpower-change"
 ```
 
-Forward-tests must run in a temporary copy or isolated fixture when practical. Do not mutate `/Users/elvis/.codex/skills/` during forward-tests except for the explicitly approved target skill edit.
+Forward-tests must run in a temporary copy or isolated fixture when practical.
+Do not mutate `${CODEX_HOME:-$HOME/.codex}/skills/` during forward-tests except
+for the explicitly approved target skill edit.
 
 ## Required workflow
 
@@ -110,7 +117,7 @@ Forward-tests must run in a temporary copy or isolated fixture when practical. D
 Minimum validation after any self-evolution edit:
 
 ```bash
-python3 /Users/elvis/.codex/skills/.system/skill-creator/scripts/quick_validate.py /Users/elvis/.codex/skills/openspec-superpower-change
+"${PYTHON_BIN:-python3}" "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-creator/scripts/quick_validate.py" "${CODEX_HOME:-$HOME/.codex}/skills/openspec-superpower-change"
 ```
 
 Static checks should confirm:

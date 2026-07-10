@@ -13,6 +13,8 @@ The goal is simple: an AI agent should not move from a request directly to imple
 - Decides when OpenSpec is required and blocks implementation before approval.
 - Routes approved work into Superpowers planning, TDD, debugging, and verification flows.
 - Requires Step Evidence Gate output before progress or completion claims.
+- Requires current-revision Plan/Brief Preflight Review before execution.
+- Uses schema-3 hashed evidence for external Reports, Reviews, and final gates.
 - Provides controlled self-evolution and local/open-source skill synchronization rules.
 
 ## Why It Exists
@@ -48,11 +50,12 @@ Read local rules
 -> OpenSpec proposal if contracts or high-risk behavior change
 -> stop until approval
 -> Superpowers plan for approved implementation
+-> Plan/Brief Preflight Review; revise and repeat until PASS
 -> TDD / debugging / implementation discipline
 -> Step Evidence Gate on complete business slices
 -> verify -> Review -> fix and repeat until Review PASS
--> fresh final verification and final diff/scope Review
--> completion only after both pass
+-> persist fresh final verification evidence, then final diff/scope Review
+-> reconcile/archive OpenSpec and complete only after all gates pass
 ```
 
 ## Request Modes
@@ -111,6 +114,7 @@ OpenSpec may be skipped only for narrow restoration of existing intended behavio
 │   ├── approved-implementation-workflow.md
 │   ├── direct-change-rule.md
 │   ├── step-evidence-gate.md
+│   ├── superpowers-adapter.md
 │   ├── self-evolution-rule.md
 │   └── sync-checklist.md
 ├── scripts/
@@ -133,6 +137,7 @@ OpenSpec may be skipped only for narrow restoration of existing intended behavio
 - `references/approved-implementation-workflow.md`: approved implementation workflow.
 - `references/direct-change-rule.md`: low-risk direct change requirements.
 - `references/step-evidence-gate.md`: compact and full evidence templates.
+- `references/superpowers-adapter.md`: OpenSpec-aware Superpowers artifact, permission, and Preflight mapping.
 - `references/self-evolution-rule.md`: rules for changing this skill.
 - `references/sync-checklist.md`: local runtime and open-source copy synchronization.
 
@@ -150,10 +155,26 @@ cp -R openspec-superpower-change "${CODEX_HOME:-$HOME/.codex}/skills/openspec-su
 Run validation after editing the skill:
 
 ```bash
-"${PYTHON_BIN:-python3}" /Users/elvis/.codex/skills/.system/skill-creator/scripts/quick_validate.py /path/to/openspec-superpower-change
+"${PYTHON_BIN:-python3}" "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-creator/scripts/quick_validate.py" /path/to/openspec-superpower-change
 PYTHONDONTWRITEBYTECODE=1 python3 /path/to/openspec-superpower-change/scripts/validate_core_gates.py /path/to/openspec-superpower-change
 PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s /path/to/openspec-superpower-change/tests -v
 ```
+
+For an actual schema-3 external status, also validate referenced evidence files:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python3 /path/to/openspec-superpower-change/scripts/validate_core_gates.py \
+  /path/to/openspec-superpower-change \
+  --status /project/docs/agent-collab/<change-id>/status.md \
+  --artifact-root /project
+```
+
+Each referenced artifact embeds a schema-1 manifest that binds role, result,
+change, batch, attempt, and source canonical revision/SHA-256. Before a
+transition introduces new evidence, validate a proposed status from outside the
+project with `--previous-status /project/docs/agent-collab/<change-id>/status.md`;
+this is mandatory for `complete`. Replace the one canonical status only after
+PASS, and do not persist a second marker block in the project.
 
 `quick_validate.py` requires PyYAML; set `PYTHON_BIN` accordingly. The project validator and tests exercise the dependency-free fallback.
 
@@ -178,6 +199,8 @@ Use Direct Change mode. Confirm this restores intended behavior, make the smalle
 - Do not let `CONTEXT.md` replace OpenSpec proposal artifacts.
 - Do not sync runtime and open-source copies with directory-level overwrites; use the sync checklist.
 - Do not complete verified-but-unreviewed work; any Review finding restarts correction, verification, and Review.
+- Do not call OpenSpec-backed work closed with unreconciled tasks or without the
+  repository-appropriate archive and post-archive validation.
 
 ## License
 

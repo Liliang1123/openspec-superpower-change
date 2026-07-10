@@ -76,4 +76,4 @@ Open-source repositories are the source of truth. Runtime copies receive the sam
 
 ## Rollback
 
-Restore both source and runtime trees from `/private/tmp/two-codex-skills-self-evolution-20260710-064702/`, or revert the new repository commits after push. Temporary backups remain until all validations, pushes, and final checks pass.
+During implementation, restore both source and runtime trees from the structured temporary backup. After validation and push, that backup was removed as required; long-term rollback uses the published repository commits.
