@@ -14,10 +14,12 @@ The goal is simple: an AI agent should not move from a request directly to imple
 - Routes approved work into Superpowers planning, TDD, debugging, and verification flows.
 - Requires Step Evidence Gate output before progress or completion claims.
 - Requires current-revision Plan/Brief Preflight Review before execution.
-- Uses schema-4 agent-bound Handoff state plus schema-1 hashed evidence for
-  external Reports, Reviews, and final gates.
-- Keeps Codex authoritative while allowing Antigravity CLI and Grok CLI to act
-  as assigned executors or independent reviewers.
+- Uses schema-5 Handoff state plus schema-2 evidence to separate agent product,
+  instance, role, capability profile, provenance, and Confirmation Lease.
+- Routes stable High/Medium/Low capability profiles without hardcoding model
+  names and keeps the bound Codex control-plane instance authoritative.
+- Separates platform, workflow-scope, and business/production authorization;
+  High Review audits actual wiring, mechanisms, and an independent probe.
 - Provides allowlisted Codex/Antigravity/Grok runtime synchronization with a
   versioned managed governance block and sensitive-category denial.
 

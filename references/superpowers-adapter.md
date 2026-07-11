@@ -57,3 +57,14 @@ Evidence Gate and Review operate on a complete business slice or explicit risk
 milestone, not every two-to-five-minute action. Review findings restart the
 appropriate fix/verification/Review loop. `verification-before-completion`
 remains mandatory after final Review and OpenSpec closeout.
+
+## Capability Profiles And Confirmation Reuse
+
+A Superpowers execution style does not grant decision authority. Bind work to
+`control-plane-high`, `cohesive-medium`, or `mechanical-low` and escalate when a
+profile reaches its ceiling. Platform sandbox/prefix permission is only the tool
+layer; it cannot satisfy workflow scope or business/production authorization.
+An unchanged Confirmation Lease avoids duplicate prompts for safe commands and
+the same finding's fix/verify/Review loop. Material revision, scope, risk,
+production, credential, external-effect, destructive-Git, evidence, or user
+changes invalidate the lease.

@@ -72,6 +72,14 @@ class ManifestAndTriggerTests(unittest.TestCase):
     def test_portable_manifest_accepts_only_declared_schema(self):
         self.assertEqual(sync.validate_manifest(portable_manifest()), portable_manifest())
 
+    def test_manifest_accepts_version_2_tiered_governance_invariants(self):
+        manifest = portable_manifest()
+        manifest["managed_rules"]["version"] = 2
+        manifest["managed_rules"]["invariant_ids"] = [
+            f"CCG-{number:03d}" for number in range(1, 14)
+        ]
+        self.assertEqual(sync.validate_manifest(manifest), manifest)
+
     def test_manifest_rejects_sensitive_categories(self):
         for denied in (
             "auth.json",
@@ -225,6 +233,23 @@ class ManagedMarkerTests(unittest.TestCase):
                 self.body, installed, version=1, invariant_ids=INVARIANTS
             )
         )
+
+    def test_version_upgrade_replaces_markers_and_preserves_outside_bytes(self):
+        v2_ids = [f"CCG-{number:03d}" for number in range(1, 14)]
+        v2_body = "\n".join(f"- [{item}] invariant" for item in v2_ids) + "\n"
+        prefix = "native-prefix\r\n"
+        suffix = "native-suffix\r\n"
+        original = f"{prefix}{self.start}\r\n{self.body}{self.end}\r\n{suffix}"
+        upgraded = sync.install_managed_block(original, v2_body, version=2)
+        v2_start = sync.MANAGED_BLOCK_START.format(version=2)
+        v2_end = sync.MANAGED_BLOCK_END.format(version=2)
+        self.assertTrue(upgraded.startswith(prefix + v2_start))
+        self.assertTrue(upgraded.endswith(v2_end + "\r\n" + suffix))
+        self.assertNotIn(self.start, upgraded)
+        self.assertNotIn(self.end, upgraded)
+        self.assertTrue(sync.validate_managed_rule_parity(
+            v2_body, upgraded, version=2, invariant_ids=v2_ids
+        ))
 
     def test_first_install_rejects_partial_or_mismatched_existing_marker(self):
         for original in (

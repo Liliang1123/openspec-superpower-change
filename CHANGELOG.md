@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.0 - 2026-07-11
+
+- Add stable High/Medium/Low capability profiles without binding authority to
+  concrete model names.
+- Upgrade new external contracts to schema 5 and schema-2 evidence with
+  product/instance/role/profile separation and active schema-4 drain gating.
+- Add layered authorization, hash-bound Confirmation Leases, decision
+  provenance, governed Learning Candidates, and High mechanism Review.
+- Upgrade the managed governance block to version 2 (`CCG-001` through
+  `CCG-013`) and keep runtime publication separately authorized.
+
 ## 0.3.0 - 2026-07-11
 
 - Upgrade external collaboration to schema 4 with immutable executor,

@@ -5,7 +5,7 @@
 
 <!-- COOP_EVIDENCE_MANIFEST_START -->
 ```yaml
-evidence_schema_version: 1
+evidence_schema_version: 2
 evidence_role: final-verification
 evidence_result: pass
 change_id: <change-id>
@@ -13,8 +13,10 @@ current_batch: <final batch>
 attempt: <attempt>
 contract_revision: <verified canonical revision>
 canonical_sha256: <verified canonical SHA-256>
-agent_identity: codex
-agent_role: decision-owner
+agent_product: codex
+agent_instance_id: <canonical control-plane instance>
+agent_role: control-plane
+capability_profile: control-plane-high
 ```
 <!-- COOP_EVIDENCE_MANIFEST_END -->
 

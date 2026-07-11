@@ -31,7 +31,7 @@
 - Fix/re-review rounds:
 - Final Review artifact and SHA-256:
 
-The final Review is a separate Review artifact carrying a schema-1
+The final Review is a separate Review artifact carrying a schema-2
 `final-review` manifest. Do not reuse the final-verification manifest or this
 closure report as final Review evidence.
 

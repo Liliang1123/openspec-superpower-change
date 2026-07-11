@@ -70,10 +70,14 @@ Gate 0 must happen before file modification, state-changing command, implementat
 - No completion claim is allowed without Review PASS.
 - External completion additionally requires runtime-validated hashed references
   for the attempt Report, batch Review, final verification manifest, and final
-  Review. Their schema-1 manifests bind role/result/change/batch/attempt/source
-  fingerprint plus canonical `agent_identity` / `agent_role`, and `complete`
-  must validate against the actual previous status. Standard/strict external
-  execution rejects executor self-review; Codex remains the decision owner.
+  Review. New schema-2 manifests bind product/instance/role/profile plus
+  role/result/change/batch/attempt/source fingerprint, and `complete` validates
+  against the actual previous status. Historical schema-4/schema-1 evidence is
+  immutable. Standard/strict external execution rejects same-instance self-review;
+  the bound Codex control-plane instance remains decision owner.
+- High Review evidence includes actual diff inspection, production wiring trace,
+  critical reruns, claim-to-mechanism support, and an independent adversarial or
+  business-chain probe. Metadata labels alone cannot prove runtime behavior.
 
 ## Interrupted / Dirty Diff Audit
 

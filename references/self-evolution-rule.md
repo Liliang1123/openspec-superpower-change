@@ -157,3 +157,14 @@ After self-evolution, report:
 - forward-test results;
 - residual risks;
 - rollback command or path.
+
+## Governed Learning Candidates
+
+Use `learning-candidate-pipeline.md` for user corrections and discovered
+invariants. Candidate capture may be automatic, but task-local and project-local
+candidates stay within their scope. A global candidate requires two independent
+reproductions or one high-severity security, integrity, or false-PASS event even
+to propose Self-Evolution. Implementation still requires the specific approved
+OpenSpec Change, backup, TDD, forward-tests, Review, runtime synchronization, and
+separate publication authorization. Prefer deterministic validators/tests over
+repeating mechanical prose.

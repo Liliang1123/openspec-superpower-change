@@ -7,9 +7,12 @@
       "files": [
         {"path": "SKILL.md", "targets": ["codex", "antigravity-cli", "grok-cli"]},
         {"path": "references/approved-implementation-workflow.md", "targets": ["codex", "antigravity-cli", "grok-cli"]},
+        {"path": "references/agent-capability-routing.md", "targets": ["codex", "antigravity-cli", "grok-cli"]},
+        {"path": "references/confirmation-lease.md", "targets": ["codex", "antigravity-cli", "grok-cli"]},
         {"path": "references/cross-cli-sync.md", "targets": ["codex", "antigravity-cli", "grok-cli"]},
         {"path": "references/direct-change-rule.md", "targets": ["codex", "antigravity-cli", "grok-cli"]},
         {"path": "references/handoff-contract.md", "targets": ["codex", "antigravity-cli", "grok-cli"]},
+        {"path": "references/learning-candidate-pipeline.md", "targets": ["codex", "antigravity-cli", "grok-cli"]},
         {"path": "references/openspec-decision-rule.md", "targets": ["codex", "antigravity-cli", "grok-cli"]},
         {"path": "references/proposal-workflow.md", "targets": ["codex", "antigravity-cli", "grok-cli"]},
         {"path": "references/request-modes.md", "targets": ["codex", "antigravity-cli", "grok-cli"]},
@@ -46,9 +49,9 @@
     }
   ],
   "managed_rules": {
-    "version": 1,
+    "version": 2,
     "source": "references/shared-global-governance.md",
-    "invariant_ids": ["CCG-001", "CCG-002", "CCG-003", "CCG-004", "CCG-005", "CCG-006", "CCG-007", "CCG-008"]
+    "invariant_ids": ["CCG-001", "CCG-002", "CCG-003", "CCG-004", "CCG-005", "CCG-006", "CCG-007", "CCG-008", "CCG-009", "CCG-010", "CCG-011", "CCG-012", "CCG-013"]
   },
   "targets": [
     {"id": "codex", "selection": "required", "result": "pending", "decision_owner": "codex", "evidence": "pending-runtime-verification", "reason": "selected collaboration runtime", "resume_condition": "rerun parity and discovery checks"},

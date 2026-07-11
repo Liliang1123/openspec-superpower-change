@@ -25,6 +25,7 @@ DENIED_SEGMENTS = {
 }
 DENIED_SUFFIXES = {".key", ".pem", ".p12", ".pfx"}
 REQUIRED_MANIFEST_KEYS = {"schema_version", "skills", "managed_rules", "targets"}
+MANAGED_RULE_INVARIANT_COUNT = {1: 8, 2: 13}
 PORTABLE_MANIFEST_PATH = "references/cross-cli-portable-manifest.json"
 
 
@@ -118,9 +119,14 @@ def validate_manifest(manifest):
     if type(rules["version"]) is not int or rules["version"] < 1:
         raise ValueError("managed_rules version must be a positive integer")
     _require_portable_path(rules["source"])
-    expected_ids = [f"CCG-{number:03d}" for number in range(1, 9)]
+    invariant_count = MANAGED_RULE_INVARIANT_COUNT.get(rules["version"])
+    if invariant_count is None:
+        raise ValueError("managed_rules version is not supported")
+    expected_ids = [f"CCG-{number:03d}" for number in range(1, invariant_count + 1)]
     if rules["invariant_ids"] != expected_ids:
-        raise ValueError("managed_rules invariant_ids must be CCG-001..CCG-008")
+        raise ValueError(
+            f"managed_rules invariant_ids must be CCG-001..CCG-{invariant_count:03d}"
+        )
     if not isinstance(manifest["targets"], list) or not manifest["targets"]:
         raise ValueError("manifest targets must be a non-empty list")
     _validate_target_states(manifest["targets"], allow_pending=True)
@@ -231,6 +237,34 @@ def _marker_parts(text: str, version: int) -> tuple[str, str, str]:
     return text[:start_index], body, text[end_index:]
 
 
+def _any_managed_marker_parts(text: str) -> tuple[str, str, str, int]:
+    """Return outside bytes, body, and version for one valid managed marker pair."""
+    start_pattern = re.compile(r"<!-- CROSS_CLI_GOVERNANCE_BEGIN version=(\d+) -->")
+    end_pattern = re.compile(r"<!-- CROSS_CLI_GOVERNANCE_END version=(\d+) -->")
+    starts = list(start_pattern.finditer(text))
+    ends = list(end_pattern.finditer(text))
+    if len(starts) != 1 or len(ends) != 1 or text.count("CROSS_CLI_GOVERNANCE_") != 2:
+        raise ValueError("managed-rule file has partial, mismatched, or duplicate markers")
+    start, end = starts[0], ends[0]
+    if start.group(1) != end.group(1) or start.end() > end.start():
+        raise ValueError("managed-rule file has partial, mismatched, or duplicate markers")
+    body = text[start.end():end.start()]
+    if "CROSS_CLI_GOVERNANCE_" in body:
+        raise ValueError("managed-rule markers must not be nested")
+    return text[:start.start()], body, text[end.end():], int(start.group(1))
+
+
+def _render_managed_block(prefix, old_body, suffix, canonical_body, *, version):
+    newline = "\r\n" if old_body.startswith("\r\n") else "\n"
+    normalized = canonical_body.replace("\r\n", "\n").replace("\r", "\n")
+    rendered = normalized.replace("\n", newline)
+    if not rendered.endswith(newline):
+        rendered += newline
+    start = MANAGED_BLOCK_START.format(version=version)
+    end = MANAGED_BLOCK_END.format(version=version)
+    return prefix + start + newline + rendered + end + suffix
+
+
 def extract_managed_block(text, *, version):
     """Extract the unique versioned managed-rule body with LF normalization."""
     _, body, _ = _marker_parts(text, version)
@@ -252,16 +286,17 @@ def replace_managed_block(original, canonical_body, *, version):
 
 
 def install_managed_block(original, canonical_body, *, version):
-    """Install one managed block or replace the one valid existing block."""
+    """Install or upgrade one valid block while preserving every outside byte."""
     marker_token = "CROSS_CLI_GOVERNANCE_"
     start = MANAGED_BLOCK_START.format(version=version)
     end = MANAGED_BLOCK_END.format(version=version)
-    start_count = original.count(start)
-    end_count = original.count(end)
-    if start_count == end_count == 1:
-        return replace_managed_block(original, canonical_body, version=version)
-    if marker_token in original or start_count or end_count:
-        raise ValueError("managed-rule file has partial, mismatched, or duplicate markers")
+    if marker_token in original:
+        prefix, old_body, suffix, installed_version = _any_managed_marker_parts(original)
+        if installed_version > version:
+            raise ValueError("managed-rule version downgrade is not allowed")
+        return _render_managed_block(
+            prefix, old_body, suffix, canonical_body, version=version
+        )
     newline = "\r\n" if "\r\n" in original and "\n" not in original.replace("\r\n", "") else "\n"
     separator = "" if not original or original.endswith(("\n", "\r")) else newline
     normalized = canonical_body.replace("\r\n", "\n").replace("\r", "\n")

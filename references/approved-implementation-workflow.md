@@ -57,8 +57,10 @@ profile, rollback/stop conditions, branch/worktree choice, and Git authority.
 
 ## External Implementation
 
-1. Create one schema-version-4 Handoff Contract at canonical `status.md`, with
-   immutable concrete executor/reviewer identities and `decision_owner: codex`.
+1. Create one schema-version-5 Handoff Contract at canonical `status.md`, with
+   immutable control-plane/executor/reviewer product, instance, role, and profile
+   assignments, decision provenance, and a Confirmation Lease. A visible active
+   schema-4 contract blocks runtime schema-5 deployment and finishes under v4.
 2. A low-risk Direct Change may use `compact`/`single`; approved public/API
    restoration remains `strict`, and OpenSpec-backed work uses its approved
    evidence and batch profiles.
@@ -72,11 +74,14 @@ profile, rollback/stop conditions, branch/worktree choice, and Git authority.
 7. Brief and Report carry the same execution-revision canonical SHA-256. A
    mismatch blocks Review and batch promotion.
 8. Every evidence-bearing transition validates its proposed status against the
-   actual prior canonical status before replacement; schema-1 manifests bind
-   role/result/change/batch/attempt/source revision/SHA-256 plus
-   `agent_identity` and `agent_role`. Standard/strict executor and reviewer
-   identities are distinct; compact `not-applicable` requires a non-blank reason
-   and Codex inline Review.
+   actual prior canonical status before replacement. New schema-2 manifests bind
+   product/instance/role/profile plus result/change/batch/attempt/source
+   revision/SHA-256. Standard/strict executor and reviewer instance IDs differ,
+   even for the same product; compact null reviewer requires a non-blank reason
+   and control-plane inline Review. Historical schema-4/schema-1 evidence is
+   immutable.
+9. Manual copy/paste of a state-changing standard/strict Brief does not downgrade
+   governance. Validate the same Handoff and evidence chain before promotion.
 
 ## Final Completion
 
@@ -109,3 +114,16 @@ For OpenSpec-backed work after implementation gates pass:
 For OpenSpec-backed multi-step work, skip the Superpowers plan only when the
 user explicitly says to skip it. Compact Direct Change does not require a large
 plan by default. Never skip final verification or Review.
+
+## Tiered Authorization And High Review
+
+Route capability through `agent-capability-routing.md`. Platform permission,
+workflow scope, and business/production authorization are independent layers.
+Reuse an unchanged Confirmation Lease for safe checks and same-finding loops;
+request a new user decision for any invalidating production, risk, scope,
+credential, external-effect, destructive-Git, evidence, or user-decision change.
+
+For standard/strict work, High Review inspects actual files and the complete
+diff, traces copy/transform/production wiring and every behavior claim to its
+mechanism, reruns critical evidence, and adds an independent adversarial or real
+business-chain probe. Executor PASS cannot substitute for this Review.

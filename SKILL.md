@@ -17,7 +17,7 @@ or an already-handed-off external batch.
 
 - 触发：用户明确要求“少 token/更短/更精简/像 caveman 说”。
 - 允许：路由结论、Gate 0 摘要、发现列表、风险要点、验证命令说明。
-- 禁止：OpenSpec 提案正文、handoff/contracts、schema-1/3 evidence artifact 本体、
+- 禁止：OpenSpec 提案正文、handoff/contracts、schema-1/2 evidence artifact 本体、
   验收状态转移、final verification 结论、关键命令、敏感数据、最终闭环证据。
 - 对于治理 artifact，本地化输出可压缩为更短段落，但不得省略必填字段。
 
@@ -58,11 +58,13 @@ batch profiles, Handoff creation, and final completion. The brief skill owns
 Brief/Report/Review attempts only after handoff and returns the final batch to
 this router.
 
-Codex is the authoritative collaboration owner. Antigravity CLI and Grok CLI
-may be assigned as external executors or independent reviewers, but their
-results remain evidence inputs until Codex validates them and records the
-canonical transition. Standard/strict external batches require distinct
-executor/reviewer identities; compact work may remain inline.
+Codex is the authoritative collaboration owner. Codex, Antigravity CLI, or Grok
+CLI instances may be assigned as bounded executors or independent reviewers, but
+their results remain evidence inputs until the bound Codex control-plane instance
+validates them and records the canonical transition. Standard/strict external
+batches require different executor/reviewer instance IDs even when their product
+is the same; compact work may remain inline. Concrete model names never grant
+authority. Route assignments through `references/agent-capability-routing.md`.
 
 ## Reference Read Matrix
 
@@ -74,8 +76,8 @@ Read `SKILL.md` first, then only the matching references:
 | Implementation / bugfix | `references/request-modes.md`, `references/openspec-decision-rule.md`, `references/step-evidence-gate.md`, `references/superpowers-adapter.md` |
 | Direct Change | `references/direct-change-rule.md`, `references/step-evidence-gate.md` |
 | Runtime / tool / workflow change | `references/openspec-decision-rule.md`, `references/proposal-workflow.md`, `references/approved-implementation-workflow.md`, `references/superpowers-adapter.md` |
-| External execution | `references/approved-implementation-workflow.md`, `references/handoff-contract.md` |
-| Skill self-evolution | `references/self-evolution-rule.md`, `references/step-evidence-gate.md` |
+| External execution | `references/approved-implementation-workflow.md`, `references/handoff-contract.md`, `references/agent-capability-routing.md`, `references/confirmation-lease.md` |
+| Skill self-evolution | `references/self-evolution-rule.md`, `references/step-evidence-gate.md`, `references/learning-candidate-pipeline.md` |
 | Runtime/source sync | `references/sync-checklist.md` |
 | Cross-CLI skill/global-rule sync | `references/cross-cli-sync.md`, `references/sync-checklist.md` |
 
@@ -115,6 +117,13 @@ Do not implement OpenSpec-required work before approval.
 - Before implementation or dispatch, run a current-revision Plan/Brief
   **Preflight Review**. Any finding revises the artifact and restarts preflight.
   Preflight authorizes execution only; it is not implementation Review.
+- Separate tool/platform permission, scope/workflow authorization, and
+  business/production authorization. Reuse an unchanged Confirmation Lease for
+  safe commands and same-finding loops; never treat platform permission as a
+  business approval.
+- For standard/strict work, High Review inspects actual files and the complete
+  diff, traces copy/transform/runtime wiring and claims to mechanisms, reruns
+  critical evidence, and adds an independent adversarial or business-chain probe.
 
 Every implementation follows:
 
@@ -138,7 +147,18 @@ must be synchronized and verified on every declared required Codex,
 Antigravity CLI, and Grok CLI runtime. Repository-only docs/history changes do
 not trigger this gate. See `references/cross-cli-sync.md`.
 
-## Evidence Profiles
+## Capability And Evidence Profiles
+
+Capability profiles are independent from process weight:
+
+- `control-plane-high`: architecture, approval/risk decisions, Preflight,
+  evidence audit, promotion, archive, completion, and High Review.
+- `cohesive-medium`: approved multi-file implementation with no open design or
+  authorization decision.
+- `mechanical-low`: deterministic edits, commands, tests, and evidence collection;
+  ambiguity or authority-boundary work returns `BLOCKED`.
+
+Evidence profiles remain:
 
 - `compact`: low-risk docs, formatting, config, existing-behavior tests, or
   localized restoration; no large plan or Handoff by default.
@@ -183,6 +203,12 @@ Portable self-evolution is not complete after updating only the source repositor
 or Codex runtime. Run the declared cross-CLI target plan/apply/verify sequence;
 a missing, stale, undiscoverable, or failed required target is `BLOCKED`.
 
+A user correction or discovered invariant first enters
+`references/learning-candidate-pipeline.md`. Candidate capture may be automatic;
+Skill modification never is. A global candidate can at most propose a specific
+Self-Evolution change after its evidence threshold and cannot bypass approval,
+TDD, Review, runtime synchronization, or publication gates.
+
 ## Non-Negotiables
 
 - Do not let `CONTEXT.md` replace OpenSpec artifacts.
@@ -194,12 +220,14 @@ a missing, stale, undiscoverable, or failed required target is `BLOCKED`.
 - Do not claim completion without fresh verification evidence and Review PASS.
 - Do not accept empty critical commands, blank blocker details, evidence-free
   external PASS, or an atomic final-verification/final-Review completion update.
-- External artifacts must carry the schema-1 evidence manifest binding role,
-  result, change, batch, attempt, source canonical revision/SHA-256, producing
-  agent identity, and agent role. Runtime `complete` validation requires the
-  actual previous status.
-- Codex is the only decision owner; auxiliary executor/reviewer output cannot
-  self-authorize a canonical transition or final completion.
+- New schema-5 external artifacts carry schema-2 evidence binding product,
+  instance, role, capability profile, result, change, batch, attempt, and source
+  canonical revision/SHA-256. Historical schema-4/schema-1 evidence remains
+  immutable. Runtime `complete` validation requires the actual previous status.
+- The bound Codex control-plane instance is the only decision owner; executor or
+  reviewer output cannot self-authorize a transition or final completion.
+- Platform/tool permission never substitutes for OpenSpec, production, archive,
+  promotion, release, destructive Git, or another user-owned authorization.
 - Do not claim a portable global skill optimization complete while any declared
   required Codex, Antigravity CLI, or Grok CLI target is stale or unverified.
 - Do not duplicate mutable Handoff Contract blocks outside canonical `status.md`.

@@ -14,10 +14,12 @@
 - 将已批准工作路由到 Superpowers 的计划、TDD、调试和验证流程。
 - 要求在推进或声明完成前输出 Step Evidence Gate 证据。
 - 实施前要求对当前 revision 的 Plan/Brief 执行 Preflight Review。
-- 外部协作使用 schema 4 Agent 身份绑定，并通过 schema 1 哈希证据约束
-  Report、Review 和最终门禁。
-- Codex 保持唯一权威控制面，Antigravity CLI 与 Grok CLI 只能作为已分配的
-  executor 或 independent reviewer。
+- 外部协作使用 schema 5 与 schema 2 证据，分别绑定 Agent 产品、实例、
+  角色、能力 profile、决策来源和 Confirmation Lease。
+- 通过稳定 High/Medium/Low profile 路由能力，不硬编码具体模型名；绑定的
+  Codex control-plane 实例保持唯一决策权威。
+- 区分平台权限、工作流范围批准与业务/生产批准；High Review 检查真实 diff、
+  wiring、claim-to-mechanism 与独立探针。
 - 提供 allowlist 驱动的 Codex/Antigravity/Grok 运行时同步、版本化 managed
   governance block 与敏感类别拒绝规则。
 

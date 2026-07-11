@@ -151,3 +151,12 @@ Every sync report must include:
   managed-rule version/body hash, and any `BLOCKED`/`not-applicable` evidence;
 - residual risks;
 - rollback path.
+
+## Schema-5 Deployment Drain
+
+Before applying portable schema-5 files, inventory every known canonical
+`docs/agent-collab/*/status.md`. Any active schema-4 contract blocks deployment
+until it reaches its existing terminal state. Never rewrite, silently migrate,
+ignore, or abandon active v4 state. Historical complete v4/schema-1 evidence
+remains immutable. Retain only non-sensitive inventory fields and repeat the
+check immediately before the first runtime apply.
