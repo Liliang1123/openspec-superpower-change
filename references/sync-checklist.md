@@ -19,7 +19,15 @@ Set these for the current checkout instead of hardcoding a user's home path:
 CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
 OPENSPEC_SKILL_SOURCE="${OPENSPEC_SKILL_SOURCE:-$PWD}"
 BRIEF_SKILL_SOURCE="${BRIEF_SKILL_SOURCE:-$(dirname "$PWD")/codex-brief-antigravity-review}"
+ANTIGRAVITY_CLI_HOME="${ANTIGRAVITY_CLI_HOME:-$HOME/.gemini/antigravity-cli}"
+GROK_HOME="${GROK_HOME:-$HOME/.grok}"
 ```
+
+For portable core-skill or shared-governance changes, also read
+`references/cross-cli-sync.md`. The open-source repositories are the canonical
+sources; Codex is the authoritative decision owner. Antigravity CLI and Grok CLI
+are required runtime targets unless the user declares a valid `not-applicable`
+decision before synchronization.
 
 ## Pre-change checklist
 
@@ -55,6 +63,11 @@ git -C "$OPENSPEC_SKILL_SOURCE" status -sb
    - Step Evidence Gate signoff boundary;
    - Self-Evolution Patch/Minor/Major classification;
    - backup, validation, forward-test, and no-push-without-approval rules.
+6. When portable manifest content changed, generate and Review a path/hash-only
+   cross-CLI sync plan, then apply and verify Codex, Antigravity CLI, and Grok CLI
+   one target at a time. A failed target is restored and blocks later targets.
+7. Update only the versioned managed governance block in each CLI global rule
+   file. Preserve all native bytes outside the marker block.
 
 ## Validation checklist
 
@@ -73,6 +86,11 @@ PYTHONDONTWRITEBYTECODE=1 python3 "$BRIEF_SKILL_SOURCE/scripts/validate_template
 
 Set `PYTHON_BIN` to an interpreter with PyYAML. Run both repositories'
 standard-library `unittest` suites with default `python3` to exercise fallback behavior.
+
+For a cross-CLI-triggering change, additionally run
+`scripts/validate_cross_cli_sync.py` in plan, per-target apply/verify, and
+verify-all modes. Confirm Grok discovery with `grok inspect --json`; Antigravity
+uses deterministic manifest/reference closure plus compatible validators.
 
 ## Forward-test checklist
 
@@ -101,6 +119,9 @@ After validation and required forward-tests pass:
    user explicitly asks to retain it.
 5. Treat the open-source git history as the long-term version history; do not
    keep parallel backup histories in skill discovery paths.
+6. Remove obsolete discoverable backup skill directories only after their exact
+   real paths are inventoried, validated as contained non-symlink directories,
+   and explicitly authorized for deletion.
 
 ## Git checklist for open-source sync
 
@@ -126,5 +147,7 @@ Every sync report must include:
 - changed files in open-source project;
 - validation commands and results;
 - forward-test result when run;
+- cross-CLI trigger decision, required targets, per-target sync/discovery result,
+  managed-rule version/body hash, and any `BLOCKED`/`not-applicable` evidence;
 - residual risks;
 - rollback path.

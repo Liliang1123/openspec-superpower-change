@@ -14,8 +14,12 @@ The goal is simple: an AI agent should not move from a request directly to imple
 - Routes approved work into Superpowers planning, TDD, debugging, and verification flows.
 - Requires Step Evidence Gate output before progress or completion claims.
 - Requires current-revision Plan/Brief Preflight Review before execution.
-- Uses schema-3 hashed evidence for external Reports, Reviews, and final gates.
-- Provides controlled self-evolution and local/open-source skill synchronization rules.
+- Uses schema-4 agent-bound Handoff state plus schema-1 hashed evidence for
+  external Reports, Reviews, and final gates.
+- Keeps Codex authoritative while allowing Antigravity CLI and Grok CLI to act
+  as assigned executors or independent reviewers.
+- Provides allowlisted Codex/Antigravity/Grok runtime synchronization with a
+  versioned managed governance block and sensitive-category denial.
 
 ## Why It Exists
 
@@ -116,11 +120,15 @@ OpenSpec may be skipped only for narrow restoration of existing intended behavio
 │   ├── step-evidence-gate.md
 │   ├── superpowers-adapter.md
 │   ├── self-evolution-rule.md
-│   └── sync-checklist.md
+│   ├── sync-checklist.md
+│   ├── cross-cli-sync.md
+│   └── cross-cli-portable-manifest.json
 ├── scripts/
-│   └── validate_core_gates.py
+│   ├── validate_core_gates.py
+│   └── validate_cross_cli_sync.py
 ├── tests/
-│   └── test_workflow_rules.py
+│   ├── test_workflow_rules.py
+│   └── test_cross_cli_sync.py
 ├── openspec/
 │   ├── project.md
 │   └── changes/
@@ -140,6 +148,8 @@ OpenSpec may be skipped only for narrow restoration of existing intended behavio
 - `references/superpowers-adapter.md`: OpenSpec-aware Superpowers artifact, permission, and Preflight mapping.
 - `references/self-evolution-rule.md`: rules for changing this skill.
 - `references/sync-checklist.md`: local runtime and open-source copy synchronization.
+- `references/cross-cli-sync.md`: required runtime targets, managed-rule parity,
+  discovery, rollback, and completion blocking.
 
 ## Installation
 
@@ -160,7 +170,7 @@ PYTHONDONTWRITEBYTECODE=1 python3 /path/to/openspec-superpower-change/scripts/va
 PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s /path/to/openspec-superpower-change/tests -v
 ```
 
-For an actual schema-3 external status, also validate referenced evidence files:
+For an actual schema-4 external status, also validate referenced evidence files:
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 python3 /path/to/openspec-superpower-change/scripts/validate_core_gates.py \
@@ -177,6 +187,12 @@ this is mandatory for `complete`. Replace the one canonical status only after
 PASS, and do not persist a second marker block in the project.
 
 `quick_validate.py` requires PyYAML; set `PYTHON_BIN` accordingly. The project validator and tests exercise the dependency-free fallback.
+
+Portable core-skill changes must additionally use
+`scripts/validate_cross_cli_sync.py` to generate a path/hash-only plan, apply and
+verify each explicitly authorized runtime target, verify discovery/parity, and
+run the path/category-only sensitive audit. Runtime/global writes remain subject
+to explicit user authorization.
 
 ## Example Prompts
 

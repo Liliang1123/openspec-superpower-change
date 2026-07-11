@@ -13,6 +13,8 @@ current_batch: <final batch>
 attempt: <attempt>
 contract_revision: <verified canonical revision>
 canonical_sha256: <verified canonical SHA-256>
+agent_identity: codex
+agent_role: decision-owner
 ```
 <!-- COOP_EVIDENCE_MANIFEST_END -->
 

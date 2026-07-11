@@ -57,7 +57,8 @@ profile, rollback/stop conditions, branch/worktree choice, and Git authority.
 
 ## External Implementation
 
-1. Create one schema-version-3 Handoff Contract at canonical `status.md`.
+1. Create one schema-version-4 Handoff Contract at canonical `status.md`, with
+   immutable concrete executor/reviewer identities and `decision_owner: codex`.
 2. A low-risk Direct Change may use `compact`/`single`; approved public/API
    restoration remains `strict`, and OpenSpec-backed work uses its approved
    evidence and batch profiles.
@@ -72,7 +73,10 @@ profile, rollback/stop conditions, branch/worktree choice, and Git authority.
    mismatch blocks Review and batch promotion.
 8. Every evidence-bearing transition validates its proposed status against the
    actual prior canonical status before replacement; schema-1 manifests bind
-   role/result/change/batch/attempt/source revision/SHA-256.
+   role/result/change/batch/attempt/source revision/SHA-256 plus
+   `agent_identity` and `agent_role`. Standard/strict executor and reviewer
+   identities are distinct; compact `not-applicable` requires a non-blank reason
+   and Codex inline Review.
 
 ## Final Completion
 

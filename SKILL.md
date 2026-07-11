@@ -58,6 +58,12 @@ batch profiles, Handoff creation, and final completion. The brief skill owns
 Brief/Report/Review attempts only after handoff and returns the final batch to
 this router.
 
+Codex is the authoritative collaboration owner. Antigravity CLI and Grok CLI
+may be assigned as external executors or independent reviewers, but their
+results remain evidence inputs until Codex validates them and records the
+canonical transition. Standard/strict external batches require distinct
+executor/reviewer identities; compact work may remain inline.
+
 ## Reference Read Matrix
 
 Read `SKILL.md` first, then only the matching references:
@@ -71,6 +77,7 @@ Read `SKILL.md` first, then only the matching references:
 | External execution | `references/approved-implementation-workflow.md`, `references/handoff-contract.md` |
 | Skill self-evolution | `references/self-evolution-rule.md`, `references/step-evidence-gate.md` |
 | Runtime/source sync | `references/sync-checklist.md` |
+| Cross-CLI skill/global-rule sync | `references/cross-cli-sync.md`, `references/sync-checklist.md` |
 
 ## OpenSpec Boundary
 
@@ -125,6 +132,12 @@ fixes/reviews again for every actionable finding. Completion requires hashed
 batch/final evidence, final Review PASS, OpenSpec task reconciliation, and the
 repository-appropriate archive/validation closeout.
 
+When portable files of either core workflow skill or the shared governance
+block change, completion also requires the cross-CLI sync gate: validated source
+must be synchronized and verified on every declared required Codex,
+Antigravity CLI, and Grok CLI runtime. Repository-only docs/history changes do
+not trigger this gate. See `references/cross-cli-sync.md`.
+
 ## Evidence Profiles
 
 - `compact`: low-risk docs, formatting, config, existing-behavior tests, or
@@ -166,6 +179,10 @@ OpenSpec recursion. Do not short-circuit user approval or any self-evolution
 gate. Product behavior published from an OpenSpec-managed repository requires
 an approved OpenSpec change.
 
+Portable self-evolution is not complete after updating only the source repository
+or Codex runtime. Run the declared cross-CLI target plan/apply/verify sequence;
+a missing, stale, undiscoverable, or failed required target is `BLOCKED`.
+
 ## Non-Negotiables
 
 - Do not let `CONTEXT.md` replace OpenSpec artifacts.
@@ -178,8 +195,13 @@ an approved OpenSpec change.
 - Do not accept empty critical commands, blank blocker details, evidence-free
   external PASS, or an atomic final-verification/final-Review completion update.
 - External artifacts must carry the schema-1 evidence manifest binding role,
-  result, change, batch, attempt, and source canonical revision/SHA-256. Runtime
-  `complete` validation requires the actual previous status.
+  result, change, batch, attempt, source canonical revision/SHA-256, producing
+  agent identity, and agent role. Runtime `complete` validation requires the
+  actual previous status.
+- Codex is the only decision owner; auxiliary executor/reviewer output cannot
+  self-authorize a canonical transition or final completion.
+- Do not claim a portable global skill optimization complete while any declared
+  required Codex, Antigravity CLI, or Grok CLI target is stale or unverified.
 - Do not duplicate mutable Handoff Contract blocks outside canonical `status.md`.
 - Self-evolution cannot weaken approval, evidence, review, verification, or
   user-control boundaries.

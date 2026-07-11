@@ -97,7 +97,11 @@ for the explicitly approved target skill edit.
 9. Run static semantic checks relevant to the change.
 10. Run forward-test for Minor changes when practical and for all Major changes after approval.
 11. Run profile-appropriate Review; findings return to edit, validation, forward-test, and Review.
-12. Report changed files, validation results, Review/forward-test results, backup cleanup result, residual risks, and rollback path.
+12. If portable core-skill files or the shared governance block changed, run
+    `references/cross-cli-sync.md` for every declared required Codex,
+    Antigravity CLI, and Grok CLI target. Any stale/failed target is `BLOCKED`.
+13. Report changed files, validation results, Review/forward-test results,
+    cross-CLI target results, backup cleanup result, residual risks, and rollback path.
 
 ## Hard prohibitions
 
@@ -111,6 +115,8 @@ for the explicitly approved target skill edit.
 - Do not silently broaden the skill trigger scope.
 - Do not install third-party plugins, alter other skills, or modify production projects unless explicitly requested and separately gated.
 - Do not sync to GitHub or push without explicit user approval.
+- Do not synchronize auth, tokens, sessions, history, logs, caches, model
+  settings, hooks, MCP credentials, binaries, or other CLI-native configuration.
 
 ## Validation checklist
 

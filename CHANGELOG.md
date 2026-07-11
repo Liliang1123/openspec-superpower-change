@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0 - 2026-07-11
+
+- Upgrade external collaboration to schema 4 with immutable executor,
+  independent-reviewer, and Codex decision-owner identities.
+- Add allowlisted Codex, Antigravity CLI, and Grok CLI synchronization with
+  atomic rollback, first-install support, deterministic discovery, and parity checks.
+- Add the versioned `CCG-001` through `CCG-008` shared governance block while
+  preserving every CLI-native rule outside the managed markers.
+- Block completion on required-runtime drift and reject sensitive categories,
+  unsafe paths, symlinks, non-regular files, or tampered sync plans.
+
 ## 0.2.0 - 2026-07-10
 
 - Add Plan/Brief Preflight Review and an explicit OpenSpec-aware Superpowers adapter.

@@ -71,7 +71,9 @@ Gate 0 must happen before file modification, state-changing command, implementat
 - External completion additionally requires runtime-validated hashed references
   for the attempt Report, batch Review, final verification manifest, and final
   Review. Their schema-1 manifests bind role/result/change/batch/attempt/source
-  fingerprint, and `complete` must validate against the actual previous status.
+  fingerprint plus canonical `agent_identity` / `agent_role`, and `complete`
+  must validate against the actual previous status. Standard/strict external
+  execution rejects executor self-review; Codex remains the decision owner.
 
 ## Interrupted / Dirty Diff Audit
 
