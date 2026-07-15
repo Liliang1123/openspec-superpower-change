@@ -2,6 +2,17 @@
 
 Use this workflow when OpenSpec is required.
 
+Treat artifact drafting as `proposal-only`. Inspect existing specs, conventions,
+and active changes before asking questions. A bounded assumption is allowed only
+when it is reversible at approval time, explicit in proposal/design, and does
+not decide security, compatibility, destructive migration, data lifecycle,
+production authority, or testable acceptance. A material unresolved choice
+affecting scope, security, compatibility, data lifecycle, production authority,
+or testable acceptance requires `superpowers:brainstorming`. User delegation to
+choose an excluded boundary does not make it a bounded assumption; invoke
+brainstorming and obtain user acceptance before finalizing artifacts. Otherwise,
+Gate 0 records no implementation sub-skill for artifact drafting.
+
 1. Run repository context checks from `openspec/AGENTS.md` when present.
 2. Inspect existing specs and active changes.
 3. Use Discovery First if domain language, boundaries, or design choices are unclear.

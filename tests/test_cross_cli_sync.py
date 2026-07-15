@@ -80,6 +80,47 @@ class ManifestAndTriggerTests(unittest.TestCase):
         ]
         self.assertEqual(sync.validate_manifest(manifest), manifest)
 
+    def test_manifest_accepts_version_3_adaptive_routing_invariants(self):
+        manifest = portable_manifest()
+        manifest["managed_rules"]["version"] = 3
+        manifest["managed_rules"]["invariant_ids"] = [
+            f"CCG-{number:03d}" for number in range(1, 15)
+        ]
+        self.assertEqual(sync.validate_manifest(manifest), manifest)
+
+    def test_manifest_accepts_version_4_project_learning_invariants(self):
+        manifest = portable_manifest()
+        manifest["managed_rules"]["version"] = 4
+        manifest["managed_rules"]["invariant_ids"] = [
+            f"CCG-{number:03d}" for number in range(1, 16)
+        ]
+        try:
+            validated = sync.validate_manifest(manifest)
+        except ValueError as exc:
+            self.fail(f"managed-rule version 4 should be supported: {exc}")
+        self.assertEqual(validated, manifest)
+
+    def test_project_learning_files_are_portable_to_every_required_runtime(self):
+        manifest = json.loads(
+            (Path(__file__).parents[1] / "references" / "cross-cli-portable-manifest.json")
+            .read_text(encoding="utf-8")
+        )
+        router_files = {
+            item["path"]: set(item["targets"])
+            for skill in manifest["skills"]
+            if skill["name"] == "openspec-superpower-change"
+            for item in skill["files"]
+        }
+        expected_targets = {"codex", "antigravity-cli", "grok-cli"}
+        for relative in (
+            "references/local-instruction-checkpoint.md",
+            "references/project-learning-closeout.md",
+            "templates/learning-candidate-template.md",
+        ):
+            with self.subTest(relative=relative):
+                self.assertIn(relative, router_files)
+                self.assertEqual(router_files[relative], expected_targets)
+
     def test_manifest_rejects_sensitive_categories(self):
         for denied in (
             "auth.json",

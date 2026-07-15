@@ -23,6 +23,14 @@ Rules:
 
 ## Discovery First
 
+Run a **Domain Context Check** before material-choice classification when
+affected domain terms, actors, boundaries, states, or lifecycle may change.
+Inspect repository facts first. When the language is already clear and
+consistent, the workflow records the scoped result and does not invoke
+`grill-with-docs` solely because files will change. When ambiguity or conflict
+remains, invoke `grill-with-docs` if installed; otherwise follow the complete
+portable Discovery First procedure below.
+
 Use before OpenSpec when:
 
 - domain terms are vague, overloaded, or conflict with existing docs/code;
@@ -49,13 +57,24 @@ If `grill-with-docs` is not installed, continue with these Phase 0 rules and tel
 
 ## OpenSpec proposal
 
-Use when the request requires an approved change contract. Create proposal artifacts and stop for approval before implementation.
+Use when the request requires an approved change contract. Treat artifact
+drafting as `proposal-only`: inspect repository facts and use explicit bounded
+assumptions for reversible approval-time details. Gate 0 loads no implementation
+sub-skill for proposal drafting. A material unresolved choice requires
+brainstorming. Create proposal artifacts and stop for approval before
+implementation.
+
+Public API implementation remains `strict`; its proposal-only draft does not
+automatically load implementation planning, TDD, or code Review.
 
 ## Approved implementation
 
 Use only after the user approves the specific OpenSpec change-id and scoped
 contract. Create and Preflight Review a Superpowers implementation plan before
 implementation unless the user explicitly says to skip the plan.
+
+After implementation Review PASS, run `references/project-learning-closeout.md`
+before final verification and OpenSpec reconciliation/archive.
 
 ## Direct Change
 

@@ -4,6 +4,15 @@ This adapter maps Superpowers artifact and permission defaults onto the
 project's approved workflow. It does not weaken brainstorming, TDD, systematic
 debugging, Review, worktree safety, or verification discipline.
 
+## Phase-Aware Selective Invocation
+
+Generic create/modify wording does not activate a sub-skill by itself. Gate 0
+may record no applicable sub-skill for proposal drafting. Once a sub-skill is
+selected, follow it completely; selective invocation never weakens its
+HARD-GATE or discipline.
+
+Concrete model identity does not grant authority or choose workflow weight.
+
 ## Single OpenSpec Design Contract
 
 When OpenSpec is required, brainstorming still explores intent, alternatives,

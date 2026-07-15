@@ -1,6 +1,6 @@
 ---
 name: openspec-superpower-change
-description: "Use when a request may modify files or behavior, asks review-and-fix, changes skill/workflow/template files, needs OpenSpec or Direct Change classification or Superpowers routing, or decides evidence-based final completion; also trigger on 开发变更、变更准入、OpenSpec、Review并修复、实施闭环、Skill自演进. 可按用户要求输出 caveman 风格摘要，但不改治理约束。"
+description: "Use when a request may modify files or behavior, asks review-and-fix, changes skill/workflow/template files, needs OpenSpec or Direct Change classification or Superpowers routing, decides evidence-based final completion, or asks to archive and distill a session through Project Learning Closeout; also trigger on 开发变更、变更准入、OpenSpec、Review并修复、实施闭环、归档并蒸馏、Skill自演进. 可按用户要求输出 caveman 风格摘要，但不改治理约束。"
 ---
 
 # OpenSpec + Superpowers Change Gate
@@ -70,6 +70,11 @@ authority. Route assignments through `references/agent-capability-routing.md`.
 
 Read `SKILL.md` first, then only the matching references:
 
+For state-changing work or a whole-task completion decision, also read
+`references/local-instruction-checkpoint.md`. When correction/Review history or
+an archive-and-distill request may require durable project learning, read
+`references/project-learning-closeout.md`.
+
 | Task | Required references |
 |---|---|
 | Review-only / route review | `references/request-modes.md`, `references/response-patterns.md` |
@@ -134,6 +139,13 @@ Review BLOCKED -> Resolve/decide -> refresh evidence -> Review again
 Review PASS -> next slice, or final verification when no slice remains
 ```
 
+After implementation Review PASS and before fresh final verification or
+OpenSpec reconciliation/archive, run Project Learning Closeout. Mandatory
+project-local promotion, or an explicit user request to archive and distill the
+session, blocks final completion until durable learning artifacts and any
+mechanically enforceable regression test or validator pass focused verification
+and Review. A chat-only summary is not durable promotion.
+
 The final external batch `PASS` means `awaiting-final-verification`, not task
 completion. This router persists fresh `final_critical` evidence before final
 Review, then reviews final diff/scope/security or sensitive-data concerns and
@@ -168,11 +180,39 @@ Evidence profiles remain:
   deployment/rollback, deletion/recovery, or cross-tenant work; real evidence
   cannot be replaced with mocks or unit tests.
 
+## Phase-Aware Superpowers Activation
+
+For governed state-changing work, this change gate performs phase-aware
+classification before broad Superpowers metadata selects a sub-skill. Gate 0
+selects sub-skills from the current phase, material unresolved decisions, and
+implementation risk. Generic create/modify wording does not activate a
+Superpowers sub-skill by itself.
+
+Run the Domain Context Check before material-choice classification when affected
+terms, actors, boundaries, states, or lifecycle may change. Repository facts
+that establish clear language continue without `grill-with-docs`; unresolved or
+conflicting domain language invokes it when installed, or the complete portable
+Discovery First fallback when unavailable.
+
+- `proposal-only`: inspect repository facts first. If a reviewable contract can
+  be drafted with explicit bounded assumptions, create and validate it with no
+  implementation sub-skill.
+- Invoke brainstorming only for a material unresolved choice affecting scope,
+  security, compatibility, data lifecycle, production authority, or testable
+  acceptance. Once selected, preserve its complete HARD-GATE. A request to
+  choose for the user does not resolve a material choice; invoke brainstorming
+  and obtain acceptance before artifact finalization.
+- Refresh Gate 0 when approved implementation begins; required planning, TDD,
+  Preflight, Review, evidence, and verification then apply normally.
+
+Model identity or version does not grant approval and does not select workflow
+weight. Use task facts and stable capability/evidence profiles.
+
 ## Superpowers Mapping
 
 | Scenario | Required Superpowers |
 |---|---|
-| Ambiguous creative alternatives before a contract | `superpowers:brainstorming` |
+| Material unresolved choice after repository inspection | `superpowers:brainstorming` |
 | Multi-step approved implementation | `superpowers:writing-plans` |
 | Execute a reviewed plan | `superpowers:subagent-driven-development` or `superpowers:executing-plans` |
 | Isolate work unless current branch use is explicitly authorized | `superpowers:using-git-worktrees` |
@@ -212,6 +252,8 @@ TDD, Review, runtime synchronization, or publication gates.
 ## Non-Negotiables
 
 - Do not let `CONTEXT.md` replace OpenSpec artifacts.
+- Do not let required project learning remain only in chat, Review output, or
+  prose-only context when deterministic regression enforcement is practical.
 - Do not let OpenSpec `tasks.md` replace a Superpowers implementation plan.
 - Do not use Superpowers planning to bypass OpenSpec approval.
 - Do not implement OpenSpec-required work before approval.

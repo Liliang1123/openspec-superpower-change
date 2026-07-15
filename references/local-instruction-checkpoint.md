@@ -17,6 +17,10 @@ For OpenSpec work, discovery, domain-language changes, boundary changes, or iter
 - This checkpoint is mandatory.
 - If `CONTEXT.md` does not exist, create it by extracting established domain terms from architecture docs, code, and existing specs.
 - If it exists, verify it covers terms introduced or affected by the current change and add missing entries before proceeding.
+- In a Git repository, canonical shared `CONTEXT.md` / `CONTEXT-MAP.md` must not be intentionally ignored.
+  An ignored local copy cannot satisfy durable shared promotion. Active changes
+  may remain untracked or modified because this check does not require `git add`, commit, or push
+  without separate authorization.
 
 For localized direct bug fixes and low-risk direct changes:
 
@@ -25,6 +29,8 @@ For localized direct bug fixes and low-risk direct changes:
 - Do not create or update glossary files solely to perform a small fix.
 
 Never let glossary updates replace proposal, spec, code, or verification evidence.
+Use `project-learning-closeout.md` when corrections or Review findings need
+project-level promotion; do not put implementation chronology in the glossary.
 
 ## Mode decision
 

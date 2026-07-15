@@ -25,7 +25,7 @@ DENIED_SEGMENTS = {
 }
 DENIED_SUFFIXES = {".key", ".pem", ".p12", ".pfx"}
 REQUIRED_MANIFEST_KEYS = {"schema_version", "skills", "managed_rules", "targets"}
-MANAGED_RULE_INVARIANT_COUNT = {1: 8, 2: 13}
+MANAGED_RULE_INVARIANT_COUNT = {1: 8, 2: 13, 3: 14, 4: 15}
 PORTABLE_MANIFEST_PATH = "references/cross-cli-portable-manifest.json"
 
 

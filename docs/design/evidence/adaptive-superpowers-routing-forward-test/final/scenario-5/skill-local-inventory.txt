@@ -1,0 +1,4 @@
+/private/tmp/adaptive-superpowers-forward-runtime/skills/openspec-superpower-change/openspec/changes/add-internal-readiness-endpoint/design.md
+/private/tmp/adaptive-superpowers-forward-runtime/skills/openspec-superpower-change/openspec/changes/add-internal-readiness-endpoint/proposal.md
+/private/tmp/adaptive-superpowers-forward-runtime/skills/openspec-superpower-change/openspec/changes/add-internal-readiness-endpoint/specs/internal-readiness/spec.md
+/private/tmp/adaptive-superpowers-forward-runtime/skills/openspec-superpower-change/openspec/changes/add-internal-readiness-endpoint/tasks.md

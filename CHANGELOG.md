@@ -1,5 +1,47 @@
 # Changelog
 
+## 0.6.0 - 2026-07-15
+
+- Add a conditional Domain Context Check before material-choice routing; clear
+  work stays lean while unresolved language enters `grill-with-docs` or the
+  complete portable Discovery First fallback.
+- Add Project Learning Closeout with automatic project-local promotion after
+  independent correction/Review evidence or one high-severity event.
+- Make explicit archive-and-distill requests audit the whole task and promote
+  every confirmed project-local key point before final completion.
+- Keep `CONTEXT.md` glossary-only, route engineering traps to project guidance,
+  and require deterministic regression tests/validators when practical; prose
+  or a chat summary cannot substitute for executable enforcement.
+- Add managed invariant `CCG-015`, manifest version 4, a portable Candidate Card
+  template, qagent-shaped regression fixture, validators, and cross-CLI tests.
+- Expose archive/distill routing in Skill frontmatter and bind closeout/template
+  rules to their owning artifacts so relocation cannot produce a false PASS.
+- Promote this change's own review lesson into project engineering guidance and
+  deterministic regressions; synchronize and verify 37 portable files on each
+  required Codex, Antigravity, and Grok runtime.
+
+## 0.5.0 - 2026-07-15
+
+- Route governed work through phase-aware Gate 0 classification before broad
+  Superpowers metadata, using managed invariant `CCG-014` and manifest version 3.
+- Add the `proposal-only` path, allow only explicit bounded assumptions, and
+  require brainstorming with its intact HARD-GATE for material choices,
+  including choices the user delegates to the agent.
+- Keep approved implementation planning, TDD, Preflight, Review, evidence, and
+  verification gates unchanged, independent of model identity or version.
+- Make companion standalone Review explicit and request-scoped, findings-first,
+  and non-automatic after OpenSpec artifact generation.
+- Verify 117 router tests with zero skips, 72 companion tests, durable 5/5/25
+  forward evidence, and all three declared runtime targets with 12 installed
+  validators and target-appropriate discovery checks.
+- Treat the first shared-workspace S2 result as invalid harness contamination,
+  not a product bug. After reset, fix the real delegated authentication/
+  compatibility brainstorming bypass, add regression coverage, and pass Review.
+- Replace the earlier non-durable five-scenario behavior summaries with fresh
+  per-scenario resets and 25 persisted evidence files.
+- Record completed OpenSpec archival, post-archive strict validation, final High
+  Review, and verified temporary-resource cleanup; keep Git commit/push pending.
+
 ## 0.4.0 - 2026-07-11
 
 - Add stable High/Medium/Low capability profiles without binding authority to

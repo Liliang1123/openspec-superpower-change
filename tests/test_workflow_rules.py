@@ -168,12 +168,36 @@ class WorkflowRulesTest(unittest.TestCase):
         cls.request_modes = (ROOT / "references" / "request-modes.md").read_text(encoding="utf-8")
         cls.approved = (ROOT / "references" / "approved-implementation-workflow.md").read_text(encoding="utf-8")
         cls.handoff = (ROOT / "references" / "handoff-contract.md").read_text(encoding="utf-8")
+        cls.proposal_workflow = (
+            ROOT / "references" / "proposal-workflow.md"
+        ).read_text(encoding="utf-8")
+        cls.superpowers_adapter = (
+            ROOT / "references" / "superpowers-adapter.md"
+        ).read_text(encoding="utf-8")
+        cls.shared_governance = (
+            ROOT / "references" / "shared-global-governance.md"
+        ).read_text(encoding="utf-8")
+        cls.agent_capability_routing = (
+            ROOT / "references" / "agent-capability-routing.md"
+        ).read_text(encoding="utf-8")
+        cls.local_checkpoint = (
+            ROOT / "references" / "local-instruction-checkpoint.md"
+        ).read_text(encoding="utf-8")
+        cls.learning = (
+            ROOT / "references" / "learning-candidate-pipeline.md"
+        ).read_text(encoding="utf-8")
 
     def test_description_does_not_claim_brief_or_external_batch_work(self):
         description = self.skill.split("---", 2)[1]
         self.assertNotIn("task or step breakdowns", description)
         self.assertNotIn("external-agent handoff", description)
         self.assertIn("modify files or behavior", description)
+
+    def test_description_routes_explicit_archive_and_distill_requests(self):
+        description = self.skill.split("---", 2)[1]
+        self.assertIn("archive and distill", description)
+        self.assertIn("Project Learning Closeout", description)
+        self.assertIn("归档并蒸馏", description)
 
     def test_review_and_fix_is_not_review_only(self):
         self.assertIn("Review and fix", self.request_modes)
@@ -207,6 +231,211 @@ class WorkflowRulesTest(unittest.TestCase):
     def test_inline_implementation_requires_review(self):
         self.assertIn("inline implementation", self.approved)
         self.assertIn("Review PASS", self.approved)
+
+    def test_phase_aware_superpowers_activation_precedes_broad_metadata(self):
+        normalized_skill = " ".join(self.skill.split())
+        normalized_adapter = " ".join(self.superpowers_adapter.split())
+        normalized_governance = " ".join(self.shared_governance.split())
+        self.assertIn("Phase-Aware Superpowers Activation", self.skill)
+        self.assertIn(
+            "Generic create/modify wording does not activate a Superpowers "
+            "sub-skill by itself.",
+            normalized_skill,
+        )
+        self.assertIn(
+            "Generic create/modify wording does not activate a sub-skill by itself.",
+            normalized_adapter,
+        )
+        self.assertIn(
+            "[CCG-014] Governed state-changing work enters "
+            "`openspec-superpower-change` phase classification before broad "
+            "Superpowers metadata selects a sub-skill. Generic create/modify "
+            "wording alone does not activate a sub-skill; once selected, that "
+            "sub-skill's full rules remain in force.",
+            normalized_governance,
+        )
+
+    def test_proposal_only_can_select_no_superpowers_subskill(self):
+        normalized_skill = " ".join(self.skill.split())
+        normalized = " ".join(self.proposal_workflow.split())
+        normalized_adapter = " ".join(self.superpowers_adapter.split())
+        normalized_request_modes = " ".join(self.request_modes.split())
+        self.assertIn("proposal-only", normalized)
+        self.assertIn("no implementation sub-skill", normalized)
+        self.assertIn(
+            "Public API implementation remains `strict`; its proposal-only draft "
+            "does not automatically load implementation planning, TDD, or code Review.",
+            normalized_request_modes,
+        )
+        self.assertIn(
+            "Gate 0 loads no implementation sub-skill for proposal drafting. A "
+            "material unresolved choice requires brainstorming.",
+            normalized_request_modes,
+        )
+        self.assertIn(
+            "A bounded assumption is allowed only when it is reversible at approval "
+            "time, explicit in proposal/design, and does not decide security, "
+            "compatibility, destructive migration, data lifecycle, production "
+            "authority, or testable acceptance.",
+            normalized,
+        )
+        self.assertIn(
+            "A material unresolved choice affecting scope, security, compatibility, "
+            "data lifecycle, production authority, or testable acceptance requires "
+            "`superpowers:brainstorming`.",
+            normalized,
+        )
+        self.assertIn(
+            "A request to choose for the user does not resolve a material choice; "
+            "invoke brainstorming and obtain acceptance before artifact finalization.",
+            normalized_skill,
+        )
+        self.assertIn(
+            "User delegation to choose an excluded boundary does not make it a "
+            "bounded assumption; invoke brainstorming and obtain user acceptance "
+            "before finalizing artifacts.",
+            normalized,
+        )
+        self.assertIn(
+            "Once a sub-skill is selected, follow it completely; selective "
+            "invocation never weakens its HARD-GATE or discipline.",
+            normalized_adapter,
+        )
+
+    def test_model_identity_never_selects_workflow_weight(self):
+        normalized_skill = " ".join(self.skill.split())
+        normalized_adapter = " ".join(self.superpowers_adapter.split())
+        normalized_capability_routing = " ".join(
+            self.agent_capability_routing.split()
+        )
+        self.assertIn(
+            "Model identity or version does not grant approval and does not select "
+            "workflow weight.",
+            normalized_skill,
+        )
+        self.assertIn(
+            "Concrete model identity does not grant authority or choose workflow weight.",
+            normalized_adapter,
+        )
+        self.assertIn(
+            "Capability profiles are stable routing and authority ceilings. They are "
+            "not model names, vendor tiers, security identities, or evidence of approval.",
+            normalized_capability_routing,
+        )
+        self.assertIn(
+            "Optional model metadata is observational only and MUST NOT influence "
+            "validation, routing, or approval.",
+            normalized_capability_routing,
+        )
+
+    def test_domain_context_check_is_conditional_and_precedes_material_choice(self):
+        normalized = " ".join((self.skill + self.request_modes).split())
+        self.assertIn("Domain Context Check", normalized)
+        self.assertIn("before material", normalized)
+        self.assertIn("does not invoke `grill-with-docs`", normalized)
+        self.assertIn("complete portable Discovery First", normalized)
+        self.assertIn("references/local-instruction-checkpoint.md", self.skill)
+
+    def test_ignored_canonical_context_cannot_satisfy_shared_promotion(self):
+        normalized = " ".join(self.local_checkpoint.split())
+        self.assertIn("must not be intentionally ignored", normalized)
+        self.assertIn(
+            "does not require `git add`, commit, or push", normalized
+        )
+
+    def test_project_learning_gate_has_automatic_and_explicit_triggers(self):
+        path = ROOT / "references" / "project-learning-closeout.md"
+        self.assertTrue(path.is_file(), "project learning closeout reference missing")
+        learning_closeout = path.read_text(encoding="utf-8")
+        normalized = " ".join((self.learning + learning_closeout).split())
+        self.assertIn("two independent correction or Review signals", normalized)
+        self.assertIn("security, integrity, data-loss, or false-PASS", normalized)
+        self.assertIn("archive and distill", normalized)
+        self.assertIn("every confirmed project-local key point", normalized)
+        self.assertIn("single low-risk task-local correction", normalized)
+        self.assertIn("without creating durable documentation noise", normalized)
+
+    def test_required_project_learning_blocks_completion_and_archive(self):
+        path = ROOT / "references" / "project-learning-closeout.md"
+        self.assertTrue(path.is_file(), "project learning closeout reference missing")
+        learning_closeout = path.read_text(encoding="utf-8")
+        normalized = " ".join(
+            (self.skill + self.approved + learning_closeout).split()
+        )
+        self.assertIn("Project Learning Closeout", normalized)
+        self.assertIn("final completion is `BLOCKED`", normalized)
+        self.assertIn("before fresh final verification", normalized)
+        self.assertIn("before OpenSpec", normalized)
+
+    def test_learning_artifacts_are_layered_and_mechanical_rules_are_executable(self):
+        closeout_path = ROOT / "references" / "project-learning-closeout.md"
+        template_path = ROOT / "templates" / "learning-candidate-template.md"
+        self.assertTrue(
+            closeout_path.is_file(), "project learning closeout reference missing"
+        )
+        self.assertTrue(
+            template_path.is_file(), "learning candidate template missing"
+        )
+        learning_closeout = closeout_path.read_text(encoding="utf-8")
+        learning_template = template_path.read_text(encoding="utf-8")
+        normalized = " ".join((learning_closeout + learning_template).split())
+        self.assertIn("CONTEXT.md", normalized)
+        self.assertIn("docs/engineering-invariants.md", normalized)
+        self.assertIn("deterministic regression test or validator", normalized)
+        self.assertIn("prose-only", normalized)
+        self.assertIn("sensitive", normalized)
+
+    def test_project_learning_validator_binds_rules_to_owned_artifacts(self):
+        closeout = (
+            ROOT / "references" / "project-learning-closeout.md"
+        ).read_text(encoding="utf-8")
+        template = (
+            ROOT / "templates" / "learning-candidate-template.md"
+        ).read_text(encoding="utf-8")
+        self.validator.validate_project_learning_gate(
+            self.skill, self.approved, closeout, template
+        )
+
+        relocated_closeout = "# Project Learning Closeout\n\nPlaceholder.\n"
+        with self.assertRaisesRegex(AssertionError, "project-learning-closeout"):
+            self.validator.validate_project_learning_gate(
+                self.skill,
+                self.approved,
+                relocated_closeout,
+                template + "\n" + closeout,
+            )
+
+        relocated_template = "# Learning Candidate Card\n\nPlaceholder.\n"
+        with self.assertRaisesRegex(AssertionError, "learning-candidate-template"):
+            self.validator.validate_project_learning_gate(
+                self.skill,
+                self.approved,
+                closeout + "\n" + template,
+                relocated_template,
+            )
+
+    def test_project_learning_guidance_is_discoverable_from_project_instructions(self):
+        agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+        invariants_path = ROOT / "docs" / "engineering-invariants.md"
+        self.assertTrue(invariants_path.is_file(), "engineering invariants missing")
+        invariants = invariants_path.read_text(encoding="utf-8")
+        normalized = " ".join(invariants.split())
+        self.assertIn("docs/engineering-invariants.md", agents)
+        self.assertIn("references/project-learning-closeout.md", agents)
+        self.assertIn("entry-discoverable and artifact-bound", normalized)
+        self.assertIn("deterministic negative regression", normalized)
+
+    def test_qagent_fixture_separates_semantics_mechanism_and_regression(self):
+        fixture = (
+            ROOT
+            / "tests"
+            / "fixtures"
+            / "project-learning"
+            / "qagent-merged-paragraph.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("table-level annotation, not tabular data", fixture)
+        self.assertIn("engineering invariant", fixture)
+        self.assertIn("mechanical regression", fixture)
 
     def test_handoff_schema_has_closure_fields(self):
         for expected in (

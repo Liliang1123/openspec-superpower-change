@@ -7,6 +7,9 @@
 ## Required behavior for agents
 
 - Read `SKILL.md` before changing this project.
+- Before completion after correction/Review history, or when asked to archive and
+  distill a session, read `docs/engineering-invariants.md` and
+  `references/project-learning-closeout.md`.
 - Use Self-Evolution mode when modifying this skill itself.
 - Create a backup before self-evolution changes.
 - Treat trigger scope, OpenSpec boundaries, Superpowers boundaries, Step Evidence Gate signoff conditions, and completion-claim rules as Major self-evolution. Major changes require OpenSpec approval before implementation.

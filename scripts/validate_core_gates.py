@@ -1191,6 +1191,87 @@ def validate_frontmatter(skill: str) -> None:
         raise AssertionError(f"SKILL.md: frontmatter keys must be name, description only; got {keys}")
 
 
+def validate_project_learning_gate(
+    skill: str,
+    approved: str,
+    learning_closeout: str,
+    learning_template: str,
+) -> None:
+    try:
+        frontmatter = skill.split("---", 2)[1]
+    except IndexError as exc:
+        raise AssertionError("SKILL.md: missing frontmatter") from exc
+    normalized_skill = " ".join(skill.split())
+    normalized_approved = " ".join(approved.split())
+    normalized_closeout = " ".join(learning_closeout.split())
+    normalized_template = " ".join(learning_template.split())
+
+    for needle in (
+        "archive and distill",
+        "Project Learning Closeout",
+        "归档并蒸馏",
+    ):
+        require(frontmatter, needle, "SKILL.md frontmatter description")
+
+    for needle in (
+        "After implementation Review PASS",
+        "before fresh final verification",
+        "OpenSpec reconciliation/archive",
+        "A chat-only summary is not durable promotion",
+    ):
+        require(normalized_skill, needle, "SKILL.md project learning routing")
+
+    for needle in (
+        "Project Learning Closeout",
+        "before fresh final verification",
+        "blocks OpenSpec reconciliation and archive",
+    ):
+        require(normalized_approved, needle, "approved-implementation-workflow.md")
+
+    for needle in (
+        "Implement -> Verify -> Review PASS",
+        "-> Project Learning Closeout",
+        "-> fresh final verification -> final Review",
+        "-> OpenSpec reconcile/archive and strict validation",
+        "two independent correction or Review signals",
+        "one high-severity security, integrity, data-loss, or false-PASS event",
+        "archive and distill the session",
+        "every confirmed project-local key point",
+        "single low-risk task-local correction",
+        "docs/engineering-invariants.md",
+        "deterministic regression test or validator",
+        "Never persist full chat transcripts",
+        "credentials",
+        "tokens",
+        "customer data",
+        "final completion is `BLOCKED`",
+    ):
+        require(normalized_closeout, needle, "project-learning-closeout.md")
+
+    for needle in (
+        "status: candidate | promoted | rejected | blocked",
+        "event_kind: correction | review-finding | security | integrity | data-loss | false-pass",
+        "scope: task-local | project-local | global",
+        "promotion_trigger: threshold | explicit-archive-distill | high-severity | none",
+        "independent_reproductions:",
+        "independence_rationale:",
+        "target_artifacts:",
+        "mechanical_enforcement: required | infeasible | not-applicable",
+        "mechanical_enforcement_reason:",
+        "verification:",
+        "review_result: pending | pass | fail | blocked",
+        "decision_owner: codex",
+        "decision_provenance:",
+        "do not copy a full conversation or Review transcript",
+        "credentials, tokens, private prompts",
+        "customer data",
+        "deterministic regression test or validator",
+        "prose-only documentation cannot satisfy promotion",
+        "Only the Codex control plane records `promoted`",
+    ):
+        require(normalized_template, needle, "learning-candidate-template.md")
+
+
 def validate_reference_links(root: Path, skill: str) -> None:
     for link in re.findall(r"`(references/[^`]+\.md)`", skill):
         if not (root / link).is_file():
@@ -1226,6 +1307,9 @@ def main(argv: list[str] | None = None) -> int:
     capability = read(root / "references" / "agent-capability-routing.md")
     lease = read(root / "references" / "confirmation-lease.md")
     learning = read(root / "references" / "learning-candidate-pipeline.md")
+    local_checkpoint = read(root / "references" / "local-instruction-checkpoint.md")
+    learning_closeout = read(root / "references" / "project-learning-closeout.md")
+    learning_template = read(root / "templates" / "learning-candidate-template.md")
     final_verification_template = read(root / "templates" / "final-verification-template.md")
 
     validate_frontmatter(skill)
@@ -1276,6 +1360,14 @@ def main(argv: list[str] | None = None) -> int:
         "Candidate Card", "two independent", "false-PASS", "proposal creation only",
     ):
         require(learning, needle, "learning-candidate-pipeline.md")
+    validate_project_learning_gate(
+        skill, approved, learning_closeout, learning_template
+    )
+    for needle in (
+        "must not be intentionally ignored",
+        "does not require `git add`, commit, or push",
+    ):
+        require(local_checkpoint, needle, "local-instruction-checkpoint.md")
 
     contract = extract_handoff_contract(handoff, "handoff-contract.md")
     validate_handoff_contract(contract, "handoff-contract.md")

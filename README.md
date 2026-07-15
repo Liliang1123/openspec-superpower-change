@@ -22,6 +22,10 @@ The goal is simple: an AI agent should not move from a request directly to imple
   High Review audits actual wiring, mechanisms, and an independent probe.
 - Provides allowlisted Codex/Antigravity/Grok runtime synchronization with a
   versioned managed governance block and sensitive-category denial.
+- Runs a conditional Domain Context Check so clear tasks stay lean while
+  ambiguous project language enters `grill-with-docs` or the portable fallback.
+- Turns costly corrections and Review findings into durable project knowledge
+  and regression enforcement before final completion.
 
 ## Why It Exists
 
@@ -41,6 +45,7 @@ This skill turns those risks into explicit gates, references, and validation che
 | Capability | Responsibility | Owned By |
 |---|---|---|
 | Local project rules | Repository-specific constraints, review artifacts, handoff rules, commit conventions | Project `AGENTS.md` / local docs |
+| Project knowledge | Domain glossary, engineering invariants, decisions, learning provenance, regression enforcement | `CONTEXT.md`, project docs/ADRs, Candidate Cards, tests/validators |
 | OpenSpec | Change contract, requirements, scenarios, approval state | `openspec/` |
 | Superpowers | Implementation planning, TDD, debugging, verification discipline | Superpowers skills |
 | Step Evidence Gate | Evidence required before advancing or claiming completion | `references/step-evidence-gate.md` |
@@ -52,7 +57,9 @@ This skill turns those risks into explicit gates, references, and validation che
 ```text
 Read local rules
 -> Gate 0 request classification
--> Discovery First if terms or boundaries are unclear
+-> Domain Context Check; use grill-with-docs only for unresolved language/boundaries
+-> classify phase and material choices
+-> select Superpowers by phase, material ambiguity, and risk (generic create/modify wording is insufficient)
 -> OpenSpec proposal if contracts or high-risk behavior change
 -> stop until approval
 -> Superpowers plan for approved implementation
@@ -60,9 +67,66 @@ Read local rules
 -> TDD / debugging / implementation discipline
 -> Step Evidence Gate on complete business slices
 -> verify -> Review -> fix and repeat until Review PASS
+-> Project Learning Closeout; promote and verify/Review required project knowledge
 -> persist fresh final verification evidence, then final diff/scope Review
--> reconcile/archive OpenSpec and complete only after all gates pass
+-> reconcile/archive OpenSpec and validate after archive
+-> authorized Git publication
+-> session archive/distillation summary that references durable project artifacts
 ```
+
+## Detailed Decision Flow
+
+The decisive order is:
+
+```text
+request facts -> Domain Context Check -> phase classification -> material-choice
+check -> risk/evidence profile -> selected Superpowers full rules -> approval or
+execution -> Project Learning Closeout -> final verification/Review -> archive ->
+authorized publication -> session distillation
+```
+
+| Phase | Required behavior |
+|---|---|
+| Entry / Gate 0 | Read local instructions and the affected project knowledge, classify the current request, choose evidence/capability profiles, and state whether confirmation is still required. |
+| Domain Context Check | Inspect `CONTEXT-MAP.md`, `CONTEXT.md`, affected ADRs, docs, and code when project language may change. Clear language skips `grill-with-docs`; unresolved terms, actors, boundaries, states, or lifecycle enter it, or the complete portable Discovery First fallback. |
+| Proposal-only | Inspect repository facts and existing specs. Use only reversible, explicit bounded assumptions; strictly validate proposal/design/spec/tasks and stop for approval of the exact change-id. Do not load planning/TDD/implementation Review merely because the request says create or modify. |
+| Material choice | Security, compatibility, destructive migration, data lifecycle, scope, production authority, and testable acceptance remain user-owned choices. Delegating the choice to the agent still requires brainstorming and its full HARD-GATE. |
+| Approved implementation | Refresh Gate 0, create an executable plan, Preflight Review the current revision, then use TDD/debugging and Step Evidence Gate on complete business slices. Every finding returns to fix -> verify -> Review. |
+| External Handoff | The companion runs the complete schema-5 Handoff lifecycle. Executor/reviewer evidence remains advisory until the bound Codex control plane validates and promotes it. |
+| Project Learning Closeout | After implementation Review PASS, audit corrections and findings. Automatic thresholds or an explicit request to archive and distill require promotion of confirmed project-local knowledge and regression enforcement. |
+| Finalization | Run fresh final verification only after learning promotion, then final diff/scope/sensitive-data Review, task reconciliation, OpenSpec archive, and strict post-archive validation. |
+| Publication | Git staging/commit/push remain separately authorized. The final session summary points to durable repository knowledge; it is never the only record. |
+
+## Project Learning Layers
+
+One costly lesson may produce several small artifacts, each with one job:
+
+| Knowledge | Durable location | What must not go there |
+|---|---|---|
+| Domain language and semantic relationships | `CONTEXT.md` / `CONTEXT-MAP.md` | implementation causes, incident chronology, task lists |
+| Easy-to-miss implementation or agent invariant | repository policy, default `docs/engineering-invariants.md` | full chat/Review transcript |
+| Hard-to-reverse, surprising trade-off | `docs/adr/NNNN-slug.md` | ordinary or easily reversible fixes |
+| Promotion provenance | `docs/learning-candidates/YYYY-MM-DD-<slug>.md` | secrets, customer data, private prompts |
+| Mechanically enforceable behavior | deterministic regression test or validator | prose-only claims |
+| Session archive/distillation | final summary with links to the artifacts above | becoming the sole knowledge store |
+
+Automatic promotion is required after two independent correction/Review signals
+establish the same project invariant, or one high-severity security, integrity,
+data-loss, or false-PASS event establishes it. An explicit archive-and-distill
+request always runs the audit and promotes every confirmed project-local key
+point. Required promotion blocks completion until focused verification and
+Review PASS.
+
+## Concerns and Mechanisms
+
+| Concern | Mechanism |
+|---|---|
+| Broad metadata creates unnecessary ceremony | Phase-aware precedence (`CCG-014`) selects sub-skills after task classification. |
+| Disabling Superpowers removes safeguards | Activation is adaptive; once selected, every sub-skill keeps its complete rules. |
+| Agents silently choose auth/compatibility behavior | Material user-owned choices still require brainstorming and approval. |
+| `CONTEXT.md` exists only as a stale local file | Canonical shared context must not be intentionally ignored and must enter the change inventory. |
+| A hard-won bug lesson remains only in chat | Candidate Card + Project Learning Closeout + correct durable artifact + regression enforcement. |
+| An external PASS is mistaken for completion | Codex remains the control plane; learning, final verification, final Review, archive, and sync gates still apply. |
 
 ## Request Modes
 
@@ -74,6 +138,13 @@ Read local rules
 | Approved implementation | An OpenSpec-backed proposal has been explicitly approved. | Yes, after plan |
 | Direct Change | Low-risk restoration, typo, formatting, docs-only, config-only, or tests for existing behavior. | Yes, scoped |
 | Self-Evolution | This skill, its references, validators, examples, or sync rules are being changed. | Yes, gated |
+
+For proposal-only drafting, Gate 0 may select no Superpowers sub-skill when
+repository facts and bounded assumptions produce a reviewable contract. If
+brainstorming is selected for a material unresolved choice, its complete
+HARD-GATE remains in force; after implementation is approved, planning,
+Preflight, TDD, Review, evidence, verification, and archive gates remain
+unchanged.
 
 Standalone task-prompt/Brief/checklist writing and ordinary read-only diff or Report review belong to `codex-brief-antigravity-review`. “Review and fix” returns here because it is implementation.
 
@@ -115,6 +186,9 @@ OpenSpec may be skipped only for narrow restoration of existing intended behavio
 ├── SKILL.md
 ├── references/
 │   ├── request-modes.md
+│   ├── local-instruction-checkpoint.md
+│   ├── learning-candidate-pipeline.md
+│   ├── project-learning-closeout.md
 │   ├── openspec-decision-rule.md
 │   ├── proposal-workflow.md
 │   ├── approved-implementation-workflow.md
@@ -136,12 +210,16 @@ OpenSpec may be skipped only for narrow restoration of existing intended behavio
 │   └── changes/
 ├── examples/
 ├── templates/
+│   └── learning-candidate-template.md
 └── docs/
 ```
 
 ## Key References
 
 - `references/request-modes.md`: operating modes and constraints.
+- `references/local-instruction-checkpoint.md`: local rules and canonical context durability checks.
+- `references/learning-candidate-pipeline.md`: candidate scope, thresholds, and promotion authority.
+- `references/project-learning-closeout.md`: project knowledge targets, enforcement, and completion blocking.
 - `references/openspec-decision-rule.md`: when OpenSpec is mandatory.
 - `references/proposal-workflow.md`: proposal creation and validation flow.
 - `references/approved-implementation-workflow.md`: approved implementation workflow.
@@ -215,6 +293,8 @@ Use Direct Change mode. Confirm this restores intended behavior, make the smalle
 - Do not weaken approval gates, evidence gates, or completion-claim rules.
 - Do not let OpenSpec `tasks.md` replace a Superpowers implementation plan.
 - Do not let `CONTEXT.md` replace OpenSpec proposal artifacts.
+- Do not let required project learning remain only in chat, Review output, or
+  prose when deterministic enforcement is possible.
 - Do not sync runtime and open-source copies with directory-level overwrites; use the sync checklist.
 - Do not complete verified-but-unreviewed work; any Review finding restarts correction, verification, and Review.
 - Do not call OpenSpec-backed work closed with unreconciled tasks or without the

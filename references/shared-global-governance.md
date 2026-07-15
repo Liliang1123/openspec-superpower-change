@@ -33,3 +33,12 @@
 - [CCG-013] Standard/strict High Review inspects actual files and the complete
   diff, traces copy/transform/production wiring and claims to mechanisms, reruns
   critical evidence, and adds an independent adversarial or business-chain probe.
+- [CCG-014] Governed state-changing work enters
+  `openspec-superpower-change` phase classification before broad Superpowers
+  metadata selects a sub-skill. Generic create/modify wording alone does not
+  activate a sub-skill; once selected, that sub-skill's full rules remain in force.
+- [CCG-015] Governed work conditionally resolves affected project language
+  before material-choice routing. Corrections and Review findings enter Project
+  Learning Closeout; mandatory or explicitly requested project-local promotion
+  blocks final completion until durable non-sensitive knowledge and mechanically
+  enforceable regression evidence pass verification and Review.
