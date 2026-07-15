@@ -60,6 +60,14 @@ validation then reported 1 passed / 0 failed, and `git diff --check` passed.
 Archived tasks are 25 checked / 2 pending: publication and post-publication
 cleanup remain intentionally open.
 
+Fresh main validation after the first cherry-pick then exposed a malformed
+four-backtick YAML fence that the dependency-free fallback tolerated but PyYAML
+rejected. Push stopped. The fixture was corrected, dual-parser validation was
+made explicit in `docs/engineering-invariants.md`, and the evidence-discovered
+lesson was promoted in `docs/learning-candidates/2026-07-15-dual-parser-fixtures.md`.
+Both parser paths and independent Review passed; publication may resume with a
+supplemental fix commit and fresh main validation.
+
 ## Pending authorized closeout
 
 1. Commit both feature branches with the reviewed scope.

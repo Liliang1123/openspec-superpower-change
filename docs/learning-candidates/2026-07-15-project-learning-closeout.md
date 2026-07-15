@@ -29,7 +29,7 @@ decision_provenance: ai-proposed/user-approved plus explicit user archive-and-di
 - `docs/design/2026-07-15-project-learning-gate-review-corrections.md` —
   `b405f02506d807fc92ea1ed893c58c3819030caa9175d52645e98b52acbb1345`
 - `tests/test_workflow_rules.py` —
-  `e62d25f69f294a55aa18c04e5fd8cf955fd166cf7c79bbbf165b7538beee2852`
+  `ca29762996b90fd56d0fd8ff6d5bfee92050c73ae29e386681baebb0a4e48573`
 - `scripts/validate_core_gates.py` —
   `257fa35564753330f389358e40e94df265826b41659ef183dbafae5cf11b9e55`
 

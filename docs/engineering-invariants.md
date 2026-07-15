@@ -26,3 +26,20 @@ required phrase still exists somewhere in the portable file set.
 Loading pointer: agents read this file through `AGENTS.md`; executable policy
 and completion order remain canonical in `SKILL.md` and
 `references/project-learning-closeout.md`.
+
+## Validation fixtures must be valid in every supported parser mode
+
+Scope: YAML-backed workflow contracts and tests for the dependency-free parser
+fallback.
+
+Invariant: a fixture used by both PyYAML and the fallback parser must be valid
+standard YAML after contract-marker/fence extraction. Run the affected test
+suite once with an interpreter that provides PyYAML and once with the supported
+dependency-free interpreter. A fallback-only PASS cannot prove parser parity.
+
+Counterexample: a fenced contract closes with four backticks. The fallback
+scalar parser ignores the stray backtick, while PyYAML rejects it, so validation
+passes in one worktree interpreter and fails after cherry-pick in another.
+
+Loading pointer: the dual validation requirement is declared in `AGENTS.md`;
+this invariant explains why both paths are mandatory.
