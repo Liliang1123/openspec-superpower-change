@@ -65,5 +65,5 @@
 - [x] 6.3 Reconcile tasks, archive the change, and validate strictly after archive.
 - [x] 6.4 Complete the already authorized commit/cherry-pick/push workflow only
   after both changes pass their final gates.
-- [ ] 6.5 Remove temporary backups and extra feature worktrees only after remote
+- [x] 6.5 Remove temporary backups and extra feature worktrees only after remote
   verification; then provide the distilled session archive and final summary.

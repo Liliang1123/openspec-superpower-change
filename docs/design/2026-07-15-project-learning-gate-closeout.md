@@ -2,7 +2,7 @@
 
 Date: 2026-07-15  
 Change: `add-project-learning-gate`  
-Status: **PUBLISHED — temporary-resource and worktree cleanup pending**
+Status: **COMPLETE — published and cleanup verified**
 
 ## Outcome
 
@@ -75,15 +75,20 @@ branches. A main-only PyYAML failure stopped the first push attempt; the
 dual-parser fixture corrections were reviewed, committed, cherry-picked, and
 both main repositories were revalidated before publication.
 
-- Router remote main: `345995e709d6108646f637f3af13b12b22493312`
+- Router reviewed implementation checkpoint:
+  `345995e709d6108646f637f3af13b12b22493312`
 - Companion remote main: `a869d7b214ef199f3d2461da6e65c7b00461808c`
 
 `git ls-remote` confirmed both remote SHAs exactly match local main. Archived
 task 6.4 is complete.
 
-## Pending authorized cleanup
+## Cleanup
 
-Remove task-owned backups/plans and both extra feature worktrees, then record
-task 6.5 complete and verify final clean state.
+After remote verification, cleanup removed the path/hash sync plan, transaction
+backup, structured runtime snapshot, Self-Evolution snapshot, publication
+backup, and both extra feature worktrees. Follow-up containment checks confirmed
+all seven paths are absent and found no discoverable `.bak.*` or `*.backup*`
+skill entries.
 
-Feature branches must be retained; worktree removal must not delete branches.
+Both `feature/make-superpowers-routing-adaptive` branches remain present; only
+their worktrees were removed. Archived task 6.5 is complete.
