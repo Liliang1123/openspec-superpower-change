@@ -2,7 +2,7 @@
 
 Date: 2026-07-15  
 Change: `add-project-learning-gate`  
-Status: **ARCHIVED — publication and temporary-resource cleanup pending**
+Status: **PUBLISHED — temporary-resource and worktree cleanup pending**
 
 ## Outcome
 
@@ -68,14 +68,22 @@ lesson was promoted in `docs/learning-candidates/2026-07-15-dual-parser-fixtures
 Both parser paths and independent Review passed; publication may resume with a
 supplemental fix commit and fresh main validation.
 
-## Pending authorized closeout
+## Publication
 
-1. Commit both feature branches with the reviewed scope.
-2. Remove the exact stale untracked paths in router main that would conflict,
-   then cherry-pick each feature commit into its corresponding main branch.
-3. Revalidate both main repositories, push the authorized main branches, and
-   verify remote SHAs.
-4. Mark archived task 6.4 complete, remove task-owned backups/plans and both
-   extra worktrees, mark task 6.5 complete, and verify final clean state.
+The reviewed feature commits were cherry-picked into their corresponding main
+branches. A main-only PyYAML failure stopped the first push attempt; the
+dual-parser fixture corrections were reviewed, committed, cherry-picked, and
+both main repositories were revalidated before publication.
+
+- Router remote main: `345995e709d6108646f637f3af13b12b22493312`
+- Companion remote main: `a869d7b214ef199f3d2461da6e65c7b00461808c`
+
+`git ls-remote` confirmed both remote SHAs exactly match local main. Archived
+task 6.4 is complete.
+
+## Pending authorized cleanup
+
+Remove task-owned backups/plans and both extra feature worktrees, then record
+task 6.5 complete and verify final clean state.
 
 Feature branches must be retained; worktree removal must not delete branches.
