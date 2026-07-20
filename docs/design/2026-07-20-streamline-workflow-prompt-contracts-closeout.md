@@ -182,10 +182,9 @@ reconciled.
 
 The user later authorized publication. Router feature commit `392bbe2` was
 cherry-picked to Router `main` as `f6f24be` after preserving the two identical
-pre-existing Review artifacts in `3d3f170`; remote `main` now resolves to
-`f6f24bedb3f957052eb0ca85b989970dcf16623b`. Companion feature commit `124b002`
-was cherry-picked to Companion `main` as `031234c`; remote `main` now resolves
-to `031234cf939c709238c4f2b7f6af3e1710893f1e`. Superpowers was not pushed:
+pre-existing Review artifacts in `3d3f170`; `f6f24be` is the published Router
+implementation commit. Companion feature commit `124b002` was cherry-picked to
+Companion `main` as published commit `031234c`. Superpowers was not pushed:
 its configured `origin` is the third-party upstream, while installed `main`
 remains one local commit ahead and 17 commits behind. No force-push or upstream
 history rewrite was attempted.
