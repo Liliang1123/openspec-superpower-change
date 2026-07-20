@@ -85,37 +85,17 @@ profile, rollback/stop conditions, branch/worktree choice, and Git authority.
 
 ## Final Completion
 
-After all inline slices pass, or after external handback:
-
-1. Run `references/project-learning-closeout.md` after implementation Review
-   PASS and before fresh final verification. A mandatory threshold or explicit
-   archive-and-distill request blocks completion until promoted project-local
-   artifacts pass focused verification and Review.
-2. Run fresh `final_critical` once and persist its hashed evidence manifest in a
-   new `awaiting-final-verification` revision. Later implementation changes
-   invalidate it.
-3. Review final diff, scope, tests/logs, documentation/contract consistency,
-   sensitive information, temporary files, and unrelated changes.
-4. If Review or verification fails, return to implementation and repeat the
-   fix -> verify -> Review loop.
-5. Persist final Review evidence, then mark external lifecycle `complete` only
-   when attempt Report, batch Review, final verification, and final Review
-   artifacts are present and runtime-validated with `--previous-status`.
-6. Invoke `superpowers:verification-before-completion` before any success claim.
+After all inline slices pass, or after external handback, stop using this
+route-specific workflow as completion authority and evaluate
+`references/completion-contract.md`. This section defines no independent
+whole-task checklist.
 
 ## OpenSpec closeout
 
-For OpenSpec-backed work after implementation gates pass:
-
-1. Confirm required Project Learning Closeout promotion is complete; unresolved
-   project-local learning blocks OpenSpec reconciliation and archive.
-2. Reconcile `tasks.md`; no unexplained unchecked task may remain.
-3. Update project-required design/closeout documentation.
-4. If repository completion semantics allow archival now, archive the change and
-   run strict validation after archive.
-5. If deployment or release is still required, keep the change active, record
-   owner/resume condition, and do not call the contract closed.
-6. Any closeout validation or Review finding returns to correction and Review.
+OpenSpec closeout eligibility, reconciliation, archival validation, and active
+owner/resume outcomes are governed exclusively by
+`references/completion-contract.md`. This section defines no second closeout
+checklist.
 
 For OpenSpec-backed multi-step work, skip the Superpowers plan only when the
 user explicitly says to skip it. Compact Direct Change does not require a large

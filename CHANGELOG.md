@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+- Add one Router-owned Completion Contract for whole-task success, evidence,
+  stop conditions, learning/OpenSpec reconciliation, cross-CLI sync,
+  Git/publication authority, and residual risk.
+- Replace independent completion checklists with validated pointers while
+  retaining slice- and batch-specific evidence rules.
+- Add a static prompt-collision scenario catalog for proposal-only routing,
+  material brainstorming, unauthorized/authorized Git plans, and selected
+  HARD-GATE preservation; runtime forward-test evidence is tracked separately
+  and the catalog is not treated as behavioral proof.
+
 ## 0.6.0 - 2026-07-15
 
 - Add a conditional Domain Context Check before material-choice routing; clear

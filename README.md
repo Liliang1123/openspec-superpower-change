@@ -49,6 +49,7 @@ This skill turns those risks into explicit gates, references, and validation che
 | OpenSpec | Change contract, requirements, scenarios, approval state | `openspec/` |
 | Superpowers | Implementation planning, TDD, debugging, verification discipline | Superpowers skills |
 | Step Evidence Gate | Evidence required before advancing or claiming completion | `references/step-evidence-gate.md` |
+| Completion Contract | Single Router-owned whole-task success, stop, evidence, reconciliation, sync, and authority contract | `references/completion-contract.md` |
 | Prompt / external batch review | Standalone prompt/diff review and Handoff-backed Brief/Report/Review attempts | `codex-brief-antigravity-review` |
 | openspec-superpower-change | Routing, risk classification, approval gate, self-evolution boundary | This skill |
 
@@ -223,6 +224,7 @@ OpenSpec may be skipped only for narrow restoration of existing intended behavio
 - `references/openspec-decision-rule.md`: when OpenSpec is mandatory.
 - `references/proposal-workflow.md`: proposal creation and validation flow.
 - `references/approved-implementation-workflow.md`: approved implementation workflow.
+- `references/completion-contract.md`: the only normative whole-task completion checklist.
 - `references/direct-change-rule.md`: low-risk direct change requirements.
 - `references/step-evidence-gate.md`: compact and full evidence templates.
 - `references/superpowers-adapter.md`: OpenSpec-aware Superpowers artifact, permission, and Preflight mapping.

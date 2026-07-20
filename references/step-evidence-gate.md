@@ -43,7 +43,10 @@ Gate 0 must happen before file modification, state-changing command, implementat
 - Rollback path:
 - Stop condition:
 
-### Gate 2: Before completion claim
+### Gate 2: Before slice signoff or whole-task handback
+
+This gate records slice evidence only; the whole-task decision is deferred to
+`references/completion-contract.md`.
 
 - Changed files:
 - Verification commands:
@@ -51,7 +54,7 @@ Gate 0 must happen before file modification, state-changing command, implementat
 - Residual risks:
 - Out-of-scope changes checked:
 - Review result and artifact/inline evidence:
-- Completion claim allowed: yes/no
+- Whole-task decision: deferred to `references/completion-contract.md`
 
 ## Review Gate
 
@@ -68,9 +71,10 @@ Gate 0 must happen before file modification, state-changing command, implementat
 - `BLOCKED` records owner and resume condition; after recovery, refresh evidence
   and Review the same scope again.
 - No completion claim is allowed without Review PASS.
-- External completion additionally requires runtime-validated hashed references
-  for the attempt Report, batch Review, final verification manifest, and final
-  Review. New schema-2 manifests bind product/instance/role/profile plus
+- External batch Review additionally requires runtime-validated hashed references
+  for the attempt Report and batch Review. Final verification/final Review and
+  the whole-task decision are governed by `references/completion-contract.md`.
+  New schema-2 manifests bind product/instance/role/profile plus
   role/result/change/batch/attempt/source fingerprint, and `complete` validates
   against the actual previous status. Historical schema-4/schema-1 evidence is
   immutable. Standard/strict external execution rejects same-instance self-review;

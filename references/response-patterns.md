@@ -100,12 +100,9 @@ For Major self-evolution before approval:
 
 ## Completion pattern
 
-1. Run Project Learning Closeout when its threshold is met or the user requests
-   session archive and experience distillation.
-2. Promote and verify/Review confirmed project-local knowledge before fresh
-   final verification or OpenSpec archive; a chat-only summary is insufficient.
-3. State the final Review result and artifact or inline review evidence.
-4. List fresh final verification commands and results.
-5. Confirm scope, sensitive-data, temporary-file, and unrelated-change checks.
-6. If any result is `FAIL` or `BLOCKED`, return to correction and do not claim
-   completion.
+Use `references/completion-contract.md` as the only normative whole-task
+checklist. The response reports its outcome: final Review result and evidence,
+fresh final verification commands/results, reconciliation and required runtime
+sync status, accepted residual risks, and whether completion is allowed. A
+`FAIL` or `BLOCKED` outcome is reported as such and returns to correction or its
+recorded resume condition.

@@ -1,6 +1,7 @@
 import importlib.util
 import os
 import hashlib
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -167,6 +168,9 @@ class WorkflowRulesTest(unittest.TestCase):
         cls.skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
         cls.request_modes = (ROOT / "references" / "request-modes.md").read_text(encoding="utf-8")
         cls.approved = (ROOT / "references" / "approved-implementation-workflow.md").read_text(encoding="utf-8")
+        cls.completion = (
+            ROOT / "references" / "completion-contract.md"
+        ).read_text(encoding="utf-8")
         cls.handoff = (ROOT / "references" / "handoff-contract.md").read_text(encoding="utf-8")
         cls.proposal_workflow = (
             ROOT / "references" / "proposal-workflow.md"
@@ -231,6 +235,66 @@ class WorkflowRulesTest(unittest.TestCase):
     def test_inline_implementation_requires_review(self):
         self.assertIn("inline implementation", self.approved)
         self.assertIn("Review PASS", self.approved)
+
+    def test_completion_contract_is_canonical_and_discoverable(self):
+        path = ROOT / "references" / "completion-contract.md"
+        self.assertTrue(path.is_file(), "canonical completion contract missing")
+        completion = path.read_text(encoding="utf-8")
+        normalized = " ".join(completion.split())
+        for heading in (
+            "## Success", "## Evidence", "## Stop conditions",
+            "## Learning and reconciliation", "## Cross-CLI sync",
+            "## Git and publication authority", "## Residual risk",
+        ):
+            self.assertIn(heading, completion)
+        for obligation in (
+            "fresh final evidence", "final Review PASS",
+            "Project Learning Closeout", "OpenSpec task reconciliation",
+            "strict validation after archive", "every declared required runtime",
+            "explicit user authorization", "FAIL", "BLOCKED",
+            "final_critical", "hashed evidence manifest", "--previous-status",
+            "tests/logs", "sensitive information", "temporary files",
+            "unrelated changes", "superpowers:verification-before-completion",
+            "A chat-only summary is not durable promotion",
+            "Reconcile `tasks.md`", "Update project-required design/closeout documentation",
+        ):
+            self.assertIn(obligation, normalized)
+        self.assertIn(
+            "Run Project Learning Closeout after implementation Review PASS "
+            "and before fresh final verification",
+            normalized,
+        )
+        self.assertNotIn(
+            "Run Project Learning Closeout after implementation Review PASS when",
+            normalized,
+        )
+        self.assertIn("references/completion-contract.md", self.skill)
+
+    def test_secondary_completion_surfaces_reference_canonical_contract(self):
+        for relative in (
+            "references/response-patterns.md",
+            "references/approved-implementation-workflow.md",
+            "references/step-evidence-gate.md",
+        ):
+            text = (ROOT / relative).read_text(encoding="utf-8")
+            self.assertIn("references/completion-contract.md", text, relative)
+        evidence = (ROOT / "references" / "step-evidence-gate.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("business slice", evidence)
+        self.assertIn("batch Review", evidence)
+        skill_closure = self.skill.split("## Implementation And Closure", 1)[1].split(
+            "## Capability And Evidence Profiles", 1
+        )[0]
+        approved_final = self.approved.split("## Final Completion", 1)[1].split(
+            "## Tiered Authorization And High Review", 1
+        )[0]
+        self.assertNotIn("run Project Learning Closeout", skill_closure)
+        self.assertNotIn("persist fresh `final_critical`", approved_final)
+        self.assertNotIn("--previous-status", approved_final)
+        self.assertNotIn("superpowers:verification-before-completion", approved_final)
+        self.assertNotIn("Completion claim allowed", evidence)
+        self.assertIn("whole-task decision is deferred", evidence)
 
     def test_phase_aware_superpowers_activation_precedes_broad_metadata(self):
         normalized_skill = " ".join(self.skill.split())
@@ -301,6 +365,25 @@ class WorkflowRulesTest(unittest.TestCase):
             "invocation never weakens its HARD-GATE or discipline.",
             normalized_adapter,
         )
+
+    def test_prompt_collision_scenario_catalog_covers_phase_git_and_hard_gate(self):
+        path = ROOT / "tests" / "fixtures" / "prompt-collision-cases.json"
+        self.assertTrue(path.is_file(), "prompt-collision fixture missing")
+        cases = {case["id"]: case for case in json.loads(path.read_text(encoding="utf-8"))}
+        expected_ids = {
+            "proposal_only", "material_choice", "unauthorized_git",
+            "authorized_git", "selected_hard_gate",
+        }
+        self.assertEqual(set(cases), expected_ids)
+        for case in cases.values():
+            self.assertTrue(case["prompt"].strip())
+            self.assertTrue(case["observable"].strip())
+            self.assertNotIn("expected", case)
+        normalized = " ".join((self.skill + self.superpowers_adapter).split())
+        self.assertIn("never grants Git permission", normalized)
+        self.assertIn("current user explicitly authorizes", normalized)
+        self.assertIn("no implementation sub-skill", " ".join(self.proposal_workflow.split()))
+        self.assertIn("HARD-GATE", normalized)
 
     def test_model_identity_never_selects_workflow_weight(self):
         normalized_skill = " ".join(self.skill.split())
@@ -393,7 +476,7 @@ class WorkflowRulesTest(unittest.TestCase):
             ROOT / "templates" / "learning-candidate-template.md"
         ).read_text(encoding="utf-8")
         self.validator.validate_project_learning_gate(
-            self.skill, self.approved, closeout, template
+            self.skill, self.approved, self.completion, closeout, template
         )
 
         relocated_closeout = "# Project Learning Closeout\n\nPlaceholder.\n"
@@ -401,6 +484,7 @@ class WorkflowRulesTest(unittest.TestCase):
             self.validator.validate_project_learning_gate(
                 self.skill,
                 self.approved,
+                self.completion,
                 relocated_closeout,
                 template + "\n" + closeout,
             )
@@ -410,6 +494,7 @@ class WorkflowRulesTest(unittest.TestCase):
             self.validator.validate_project_learning_gate(
                 self.skill,
                 self.approved,
+                self.completion,
                 closeout + "\n" + template,
                 relocated_template,
             )
@@ -424,6 +509,38 @@ class WorkflowRulesTest(unittest.TestCase):
         self.assertIn("references/project-learning-closeout.md", agents)
         self.assertIn("entry-discoverable and artifact-bound", normalized)
         self.assertIn("deterministic negative regression", normalized)
+
+    def test_external_cli_debug_traces_are_temporary_and_not_durable(self):
+        invariants = (ROOT / "docs" / "engineering-invariants.md").read_text(
+            encoding="utf-8"
+        )
+        normalized = " ".join(invariants.split()).lower()
+        for required in (
+            "external cli debug traces",
+            "temporary evidence",
+            "mode `0600`",
+            "must not be quoted or echoed",
+            "remove the raw trace after final gates",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, normalized)
+
+        durable_roots = (
+            ROOT / "docs",
+            ROOT / "openspec",
+            ROOT / "references",
+        )
+        raw_traces = sorted(
+            str(path.relative_to(ROOT))
+            for durable_root in durable_roots
+            for path in durable_root.rglob("*")
+            if path.is_file()
+            and (
+                path.name.endswith(".debug.log")
+                or path.name.endswith(".debug.jsonl")
+            )
+        )
+        self.assertEqual([], raw_traces, "raw external CLI traces became durable")
 
     def test_qagent_fixture_separates_semantics_mechanism_and_regression(self):
         fixture = (
@@ -1451,8 +1568,12 @@ class WorkflowRulesTest(unittest.TestCase):
 
     def test_openspec_closeout_requires_task_reconciliation_and_archive_validation(self):
         self.assertIn("OpenSpec closeout", self.approved)
-        self.assertIn("Reconcile `tasks.md`", self.approved)
-        self.assertIn("strict validation after archive", self.approved)
+        self.assertIn("references/completion-contract.md", self.approved)
+        self.assertNotIn("Reconcile `tasks.md`", self.approved)
+        self.assertNotIn("strict validation after archive", self.approved)
+        normalized_completion = " ".join(self.completion.split())
+        self.assertIn("Reconcile `tasks.md`", normalized_completion)
+        self.assertIn("strict validation after archive", normalized_completion)
 
     def test_superpowers_adapter_and_preflight_review_are_explicit(self):
         adapter = (ROOT / "references" / "superpowers-adapter.md").read_text(encoding="utf-8")

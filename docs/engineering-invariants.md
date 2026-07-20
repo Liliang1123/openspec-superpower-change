@@ -43,3 +43,36 @@ passes in one worktree interpreter and fails after cherry-pick in another.
 
 Loading pointer: the dual validation requirement is declared in `AGENTS.md`;
 this invariant explains why both paths are mandatory.
+
+## External CLI debug traces remain temporary sensitive evidence
+
+Scope: external CLI forward tests, discovery probes, runtime-sync
+investigations, and their durable evidence.
+
+Invariant:
+
+- External CLI debug traces are temporary evidence because they may embed
+  runtime authentication material, private prompts, session data, or other
+  native CLI state even when the requested probe is read-only.
+- Mode `0600` and a private temporary directory reduce exposure while a trace
+  is needed; they do not make its content safe for durable promotion.
+- A raw trace must not be quoted or echoed, copied into repository artifacts,
+  or used as the persistent evidence object. Durable evidence retains only the
+  minimum sanitized path/hash/result metadata needed to support the claim.
+- After the source, runtime, forward-test, and Review gates no longer need the
+  trace for rollback or investigation, remove the raw trace after final gates.
+  If closeout is blocked, record the cleanup owner and resume condition instead
+  of silently retaining it.
+
+Counterexample: an agent stores a mode-`0600` CLI debug log in `/tmp`, searches
+it for a Skill path, and then echoes matching raw lines into a Review. The file
+permission limited filesystem access but did not redact authentication material
+embedded in those lines.
+
+Mechanical enforcement: the project test suite rejects raw `.debug.log` and
+`.debug.jsonl` files under durable documentation, OpenSpec, or reference roots
+and pins the handling rule in this entry.
+
+Loading pointer: agents read this file through `AGENTS.md`; task plans may name
+the exact temporary trace and cleanup checkpoint but must not duplicate or
+weaken this invariant.

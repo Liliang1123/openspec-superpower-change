@@ -1194,6 +1194,7 @@ def validate_frontmatter(skill: str) -> None:
 def validate_project_learning_gate(
     skill: str,
     approved: str,
+    completion: str,
     learning_closeout: str,
     learning_template: str,
 ) -> None:
@@ -1203,6 +1204,7 @@ def validate_project_learning_gate(
         raise AssertionError("SKILL.md: missing frontmatter") from exc
     normalized_skill = " ".join(skill.split())
     normalized_approved = " ".join(approved.split())
+    normalized_completion = " ".join(completion.split())
     normalized_closeout = " ".join(learning_closeout.split())
     normalized_template = " ".join(learning_template.split())
 
@@ -1213,20 +1215,23 @@ def validate_project_learning_gate(
     ):
         require(frontmatter, needle, "SKILL.md frontmatter description")
 
+    require(
+        normalized_skill,
+        "follows `references/completion-contract.md`",
+        "SKILL.md project learning routing",
+    )
+    require(
+        normalized_approved,
+        "`references/completion-contract.md`",
+        "approved-implementation-workflow.md",
+    )
     for needle in (
-        "After implementation Review PASS",
+        "Run Project Learning Closeout after implementation Review PASS",
         "before fresh final verification",
         "OpenSpec reconciliation/archive",
         "A chat-only summary is not durable promotion",
     ):
-        require(normalized_skill, needle, "SKILL.md project learning routing")
-
-    for needle in (
-        "Project Learning Closeout",
-        "before fresh final verification",
-        "blocks OpenSpec reconciliation and archive",
-    ):
-        require(normalized_approved, needle, "approved-implementation-workflow.md")
+        require(normalized_completion, needle, "completion-contract.md learning routing")
 
     for needle in (
         "Implement -> Verify -> Review PASS",
@@ -1278,6 +1283,67 @@ def validate_reference_links(root: Path, skill: str) -> None:
             raise AssertionError(f"SKILL.md: linked reference missing: {link}")
 
 
+def validate_completion_contract(
+    skill: str,
+    completion: str,
+    response_patterns: str,
+    approved: str,
+    evidence: str,
+) -> None:
+    normalized = " ".join(completion.split())
+    for heading in (
+        "## Success", "## Evidence", "## Stop conditions",
+        "## Learning and reconciliation", "## Cross-CLI sync",
+        "## Git and publication authority", "## Residual risk",
+    ):
+        require(completion, heading, "completion-contract.md")
+    for needle in (
+        "fresh final evidence", "final Review PASS",
+        "Project Learning Closeout", "OpenSpec task reconciliation",
+        "strict validation after archive", "every declared required runtime",
+        "explicit user authorization", "FAIL", "BLOCKED",
+        "final_critical", "hashed evidence manifest", "--previous-status",
+        "tests/logs", "sensitive information", "temporary files",
+        "unrelated changes", "superpowers:verification-before-completion",
+        "A chat-only summary is not durable promotion",
+        "Reconcile `tasks.md`", "Update project-required design/closeout documentation",
+    ):
+        require(normalized, needle, "completion-contract.md")
+    require(
+        normalized,
+        "Run Project Learning Closeout after implementation Review PASS and "
+        "before fresh final verification",
+        "completion-contract.md",
+    )
+    if "Run Project Learning Closeout after implementation Review PASS when" in normalized:
+        raise AssertionError("completion-contract.md: conditional Learning entry weakens closeout")
+    for text, label in (
+        (skill, "SKILL.md"),
+        (response_patterns, "response-patterns.md"),
+        (approved, "approved-implementation-workflow.md"),
+        (evidence, "step-evidence-gate.md"),
+    ):
+        require(text, "references/completion-contract.md", label)
+
+    skill_closure = skill.split("## Implementation And Closure", 1)[1].split(
+        "## Capability And Evidence Profiles", 1
+    )[0]
+    approved_final = approved.split("## Final Completion", 1)[1].split(
+        "## Tiered Authorization And High Review", 1
+    )[0]
+    forbidden_secondary = (
+        (skill_closure, "run Project Learning Closeout", "SKILL.md closure"),
+        (approved_final, "persist fresh `final_critical`", "approved final section"),
+        (approved_final, "--previous-status", "approved final section"),
+        (approved_final, "superpowers:verification-before-completion", "approved final section"),
+        (evidence, "Completion claim allowed", "step-evidence-gate.md"),
+    )
+    for text, needle, label in forbidden_secondary:
+        if needle in text:
+            raise AssertionError(f"{label}: independent completion rule remains: {needle!r}")
+    require(evidence, "whole-task decision is deferred", "step-evidence-gate.md")
+
+
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("root", nargs="?", default=".")
@@ -1300,6 +1366,8 @@ def main(argv: list[str] | None = None) -> int:
     skill = read(root / "SKILL.md")
     request_modes = read(root / "references" / "request-modes.md")
     approved = read(root / "references" / "approved-implementation-workflow.md")
+    response_patterns = read(root / "references" / "response-patterns.md")
+    completion = read(root / "references" / "completion-contract.md")
     self_rule = read(root / "references" / "self-evolution-rule.md")
     evidence = read(root / "references" / "step-evidence-gate.md")
     handoff = read(root / "references" / "handoff-contract.md")
@@ -1314,6 +1382,9 @@ def main(argv: list[str] | None = None) -> int:
 
     validate_frontmatter(skill)
     validate_reference_links(root, skill)
+    validate_completion_contract(
+        skill, completion, response_patterns, approved, evidence
+    )
     for needle in (
         "OpenSpec + Superpowers Change Gate", "Self-Evolution",
         "Do not implement OpenSpec-required work before approval",
@@ -1324,10 +1395,11 @@ def main(argv: list[str] | None = None) -> int:
         require(skill + request_modes + approved, needle, "routing gates")
     for needle in (
         "single design approval", "not every TDD micro-step",
-        "inline implementation", "Review PASS", "final_critical",
+        "inline implementation", "Review PASS",
         "OpenSpec closeout",
     ):
         require(approved, needle, "approved-implementation-workflow.md")
+    require(completion, "final_critical", "completion-contract.md")
     for needle in (
         "Do not self-modify without a backup",
         "Do not bypass OpenSpec approval for Major self-evolution",
@@ -1361,7 +1433,7 @@ def main(argv: list[str] | None = None) -> int:
     ):
         require(learning, needle, "learning-candidate-pipeline.md")
     validate_project_learning_gate(
-        skill, approved, learning_closeout, learning_template
+        skill, approved, completion, learning_closeout, learning_template
     )
     for needle in (
         "must not be intentionally ignored",

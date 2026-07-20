@@ -71,8 +71,9 @@ authority. Route assignments through `references/agent-capability-routing.md`.
 Read `SKILL.md` first, then only the matching references:
 
 For state-changing work or a whole-task completion decision, also read
-`references/local-instruction-checkpoint.md`. When correction/Review history or
-an archive-and-distill request may require durable project learning, read
+`references/local-instruction-checkpoint.md` and
+`references/completion-contract.md`. When correction/Review history or an
+archive-and-distill request may require durable project learning, read
 `references/project-learning-closeout.md`.
 
 | Task | Required references |
@@ -139,25 +140,17 @@ Review BLOCKED -> Resolve/decide -> refresh evidence -> Review again
 Review PASS -> next slice, or final verification when no slice remains
 ```
 
-After implementation Review PASS and before fresh final verification or
-OpenSpec reconciliation/archive, run Project Learning Closeout. Mandatory
-project-local promotion, or an explicit user request to archive and distill the
-session, blocks final completion until durable learning artifacts and any
-mechanically enforceable regression test or validator pass focused verification
-and Review. A chat-only summary is not durable promotion.
+After implementation Review PASS, whole-task closure leaves this entry workflow
+and follows `references/completion-contract.md`. That canonical contract owns
+Learning entry and promotion blocking, final evidence, reconciliation, runtime
+sync, and the completion decision; this entry does not restate those rules.
 
 The final external batch `PASS` means `awaiting-final-verification`, not task
-completion. This router persists fresh `final_critical` evidence before final
-Review, then reviews final diff/scope/security or sensitive-data concerns and
-fixes/reviews again for every actionable finding. Completion requires hashed
-batch/final evidence, final Review PASS, OpenSpec task reconciliation, and the
-repository-appropriate archive/validation closeout.
-
-When portable files of either core workflow skill or the shared governance
-block change, completion also requires the cross-CLI sync gate: validated source
-must be synchronized and verified on every declared required Codex,
-Antigravity CLI, and Grok CLI runtime. Repository-only docs/history changes do
-not trigger this gate. See `references/cross-cli-sync.md`.
+completion. Whole-task success, fresh final evidence, stop conditions, learning
+and OpenSpec reconciliation, portable runtime sync, Git/publication authority,
+and residual-risk reporting are owned by
+`references/completion-contract.md`. Apply `references/cross-cli-sync.md` when
+that contract's portable-file condition is triggered.
 
 ## Capability And Evidence Profiles
 
