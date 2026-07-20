@@ -52,7 +52,9 @@
 - Replace the earlier non-durable five-scenario behavior summaries with fresh
   per-scenario resets and 25 persisted evidence files.
 - Record completed OpenSpec archival, post-archive strict validation, final High
-  Review, and verified temporary-resource cleanup; keep Git commit/push pending.
+  Review, verified temporary-resource cleanup, and separately authorized
+  Router/Companion publication; retain Superpowers upstream reconciliation as a
+  residual boundary.
 
 ## 0.4.0 - 2026-07-11
 

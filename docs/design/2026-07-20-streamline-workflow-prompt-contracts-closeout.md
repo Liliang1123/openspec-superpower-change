@@ -2,7 +2,7 @@
 
 Date: 2026-07-20
 Change: `streamline-workflow-prompt-contracts`
-Status: **COMPLETE — push/publication decision remains pending**
+Status: **COMPLETE — Router and Companion published; Superpowers upstream publication pending**
 
 ## Outcome
 
@@ -11,7 +11,8 @@ competing prompt contracts and route load:
 
 - The Superpowers feature source now consistently preserves the Option 2
   worktree; automatic cleanup applies only to Options 1 and 4 and grants no Git
-  authority. Installed-main integration remains blocked as recorded below.
+  authority. Installed-main integration is complete; upstream publication
+  remains separate as recorded below.
 - Router whole-task completion has one canonical owner in
   `references/completion-contract.md`; secondary artifacts retain local
   slice/batch reminders and validated pointers instead of second checklists.
@@ -97,9 +98,10 @@ and `git diff --check` passed.
   became durable evidence.
 - Root `CONTEXT.md` is unrelated user-owned workspace state and is excluded from
   publication and cleanup scope unless the user separately directs otherwise.
-- No Git staging, commit, reset, clean, push, PR creation, worktree removal,
-  branch deletion, release, or publication is authorized or performed by this
-  closeout record.
+- The original closeout did not authorize Git publication. A later explicit
+  authorization committed and published only the reviewed Router and Companion
+  scope; no reset, clean, force-push, PR creation, worktree removal, branch
+  deletion, or release was performed.
 
 ## Cleanup and rollback proof
 
@@ -123,10 +125,11 @@ target path/hash; backups preserved sensitive rule files at `0600`, ordinary
 portable files at `0644`, and executables at `0755`; transaction regressions
 proved byte/mode restoration and removal of newly created paths; and fresh
 post-archive `verify-all` confirmed the deployed state. Once all gates passed,
-the temporary rollback copies were removed by design. Git `HEAD` remains the
-prior source baseline, while the current uncommitted worktree diffs and three
-validated runtime copies retain the implemented state pending the user's
-separate Git/publication decision.
+the temporary rollback copies were removed by design. The reviewed Router and
+Companion changes are now committed on and published from their respective
+`main` branches. The three validated runtime copies retain the implemented
+state; the unrelated root `CONTEXT.md` and local active OpenSpec copy remain
+untracked and excluded.
 
 ## Completion correction: installed Superpowers drift
 
@@ -175,4 +178,14 @@ behind by 17 upstream commits. No pull, merge, rebase, push, worktree removal,
 or branch deletion was performed. The fresh installed-Superpowers completion
 Review inspected both patches and resulting trees, reran installed validation,
 and returned PASS with no actionable findings. The archived ledger is fully
-reconciled; push/publication remains a separate user decision.
+reconciled.
+
+The user later authorized publication. Router feature commit `392bbe2` was
+cherry-picked to Router `main` as `f6f24be` after preserving the two identical
+pre-existing Review artifacts in `3d3f170`; remote `main` now resolves to
+`f6f24bedb3f957052eb0ca85b989970dcf16623b`. Companion feature commit `124b002`
+was cherry-picked to Companion `main` as `031234c`; remote `main` now resolves
+to `031234cf939c709238c4f2b7f6af3e1710893f1e`. Superpowers was not pushed:
+its configured `origin` is the third-party upstream, while installed `main`
+remains one local commit ahead and 17 commits behind. No force-push or upstream
+history rewrite was attempted.
