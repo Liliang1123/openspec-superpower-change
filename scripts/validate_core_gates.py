@@ -1191,6 +1191,655 @@ def validate_frontmatter(skill: str) -> None:
         raise AssertionError(f"SKILL.md: frontmatter keys must be name, description only; got {keys}")
 
 
+GOVERNED_CAVEMAN_LITE_PROFILE_OBLIGATIONS = (
+    "governed-caveman-lite",
+    "OpenSpec 精简模式：<任务>",
+    "send `OpenSpec 精简模式` before the task",
+    "OpenSpec 正常模式",
+    "concise professional full sentences",
+    "current conversation",
+    "until disabled or the conversation ends",
+    "A new conversation starts in normal output mode",
+    "no account, repository, or runtime preference",
+    "latest explicit OpenSpec mode command",
+    "even after a prior Caveman-style instruction",
+    "presentation state only",
+    "never invokes or delegates to a separate `caveman` skill",
+    "works when one is unavailable",
+    "does not activate by default",
+    "routing, approval, evidence, Review, verification, completion, Git, or publication authority",
+)
+GOVERNED_CAVEMAN_LITE_PROTECTED_OBLIGATIONS = (
+    "Gate 0",
+    "OpenSpec artifacts",
+    "Superpowers implementation plans",
+    "Handoff/evidence artifacts",
+    "canonical state transitions",
+    "PASS/FAIL/BLOCKED",
+    "final verification",
+    "final Review",
+    "critical commands",
+    "rollback instructions",
+    "security warnings",
+    "destructive confirmations",
+    "sensitive-data handling",
+    "every required field and ordering constraint",
+)
+GOVERNED_CAVEMAN_LITE_SKILL_OBLIGATIONS = (
+    GOVERNED_CAVEMAN_LITE_PROFILE_OBLIGATIONS
+    + ("mandatory governance/approval fields",)
+    + GOVERNED_CAVEMAN_LITE_PROTECTED_OBLIGATIONS
+)
+GOVERNED_CAVEMAN_LITE_RESPONSE_OBLIGATIONS = (
+    GOVERNED_CAVEMAN_LITE_PROFILE_OBLIGATIONS
+    + ("mandatory governance-step or approval field",)
+    + GOVERNED_CAVEMAN_LITE_PROTECTED_OBLIGATIONS
+)
+LEGACY_REQUEST_SCOPED_BREVITY_OBLIGATIONS = (
+    "少 token/更短/更精简/像 caveman 说",
+    "request-scoped compression",
+    "current request",
+    "does not activate or persist `governed-caveman-lite`",
+    "Only `OpenSpec 精简模式` activates the named conversation profile",
+    "same protected-surface rules",
+)
+
+
+def _governed_yaml_scalar(value: str) -> str:
+    stripped = value.strip()
+    if not stripped:
+        return stripped
+    if stripped[0] in "|>[{&*!@`":
+        raise ValueError("unsupported YAML scalar form")
+    if stripped[0] not in {'"', "'"}:
+        for index, char in enumerate(stripped):
+            if char == "#" and (
+                index == 0 or stripped[index - 1].isspace()
+            ):
+                return stripped[:index].rstrip()
+        return stripped
+
+    quote = stripped[0]
+    index = 1
+    while index < len(stripped):
+        char = stripped[index]
+        if quote == '"' and char == "\\":
+            if index + 1 >= len(stripped):
+                raise ValueError("unterminated YAML escape")
+            escape = stripped[index + 1]
+            if escape in "0abtnvfre \"\\/N_LP":
+                index += 2
+                continue
+            widths = {"x": 2, "u": 4, "U": 8}
+            if escape not in widths:
+                raise ValueError("unsupported YAML escape")
+            width = widths[escape]
+            digits = stripped[index + 2:index + 2 + width]
+            if (
+                len(digits) != width
+                or re.fullmatch(r"[0-9A-Fa-f]+", digits) is None
+            ):
+                raise ValueError("invalid YAML hexadecimal escape")
+            index += 2 + width
+            continue
+        if quote == "'" and char == "'":
+            if index + 1 < len(stripped) and stripped[index + 1] == "'":
+                index += 2
+                continue
+        if char == quote:
+            tail = stripped[index + 1:]
+            if tail and not (
+                tail[0].isspace()
+                and tail.lstrip().startswith("#")
+            ):
+                raise ValueError("unexpected text after quoted YAML scalar")
+            return stripped[:index + 1]
+        index += 1
+    raise ValueError("unterminated quoted YAML scalar")
+
+
+def _load_governed_frontmatter(text: str):
+    if yaml is not None:
+        return yaml.safe_load(text)
+
+    normalized_lines: list[str] = []
+    seen_keys: set[str] = set()
+    for raw_line in text.splitlines():
+        if not raw_line.strip() or raw_line.lstrip().startswith("#"):
+            continue
+        if raw_line[0].isspace() or ":" not in raw_line:
+            raise ValueError("unsupported YAML frontmatter structure")
+        key, value = raw_line.split(":", 1)
+        key = key.strip()
+        if (
+            re.fullmatch(r"[A-Za-z_][A-Za-z0-9_-]*", key) is None
+            or key in seen_keys
+        ):
+            raise ValueError("invalid or duplicate YAML key")
+        seen_keys.add(key)
+        normalized_lines.append(
+            f"{key}: {_governed_yaml_scalar(value)}"
+        )
+    return simple_yaml_load("\n".join(normalized_lines))
+
+
+def _markdown_visible_outside_html_comment(
+    line: str,
+    in_comment: bool,
+) -> tuple[str, bool]:
+    visible: list[str] = []
+    cursor = 0
+    while cursor < len(line):
+        if in_comment:
+            comment_end = line.find("-->", cursor)
+            if comment_end == -1:
+                return "".join(visible), True
+            cursor = comment_end + 3
+            in_comment = False
+        else:
+            comment_start = line.find("<!--", cursor)
+            if comment_start == -1:
+                visible.append(line[cursor:])
+                break
+            visible.append(line[cursor:comment_start])
+            cursor = comment_start + 4
+            in_comment = True
+    return "".join(visible), in_comment
+
+
+def _markdown_container_position(line: str) -> int:
+    position = 0
+    container_patterns = (
+        r" {0,3}>[ \t]?",
+        r" {0,3}(?:[-+*]|\d{1,9}[.)])[ \t]+",
+    )
+    while position < len(line):
+        for pattern in container_patterns:
+            container = re.match(pattern, line[position:])
+            if container is not None:
+                position += container.end()
+                break
+        else:
+            break
+    return position
+
+
+def _markdown_fence_candidate(
+    line: str,
+    *,
+    closing: bool = False,
+) -> tuple[str, str] | None:
+    position = _markdown_container_position(line)
+
+    candidate = re.match(
+        r"^ {0,3}(`{3,}|~{3,})(.*)$",
+        line[position:],
+    )
+    if candidate is not None:
+        return candidate.group(1), candidate.group(2)
+    if closing:
+        continuation = re.match(
+            r"^ {2,}(`{3,}|~{3,})(.*)$",
+            line[position:],
+        )
+        if continuation is not None:
+            return continuation.group(1), continuation.group(2)
+    return None
+
+
+def _markdown_heading_spans(
+    text: str,
+) -> list[tuple[str, int, int, int]]:
+    headings: list[tuple[str, int, int, int]] = []
+    fence_char: str | None = None
+    fence_length = 0
+    in_html_comment = False
+    offset = 0
+
+    for raw_line in text.splitlines(keepends=True):
+        line = raw_line.rstrip("\r\n")
+        line_end = offset + len(line)
+        if fence_char is not None:
+            closing_fence = _markdown_fence_candidate(
+                line,
+                closing=True,
+            )
+            if closing_fence is not None:
+                marker, suffix = closing_fence
+                if (
+                    marker[0] == fence_char
+                    and len(marker) >= fence_length
+                    and not suffix.strip()
+                ):
+                    fence_char = None
+                    fence_length = 0
+        else:
+            visible_line, in_html_comment = (
+                _markdown_visible_outside_html_comment(
+                    line,
+                    in_html_comment,
+                )
+            )
+            opening_fence = _markdown_fence_candidate(visible_line)
+            if opening_fence is not None and not (
+                opening_fence[0].startswith("`")
+                and "`" in opening_fence[1]
+            ):
+                marker = opening_fence[0]
+                fence_char = marker[0]
+                fence_length = len(marker)
+            else:
+                heading_match = re.fullmatch(
+                    r"(#{1,6})[ \t]+[^\r\n]+",
+                    visible_line,
+                )
+                if heading_match is not None and line.startswith("#"):
+                    headings.append(
+                        (
+                            visible_line,
+                            len(heading_match.group(1)),
+                            offset,
+                            line_end,
+                        )
+                    )
+        offset += len(raw_line)
+
+    return headings
+
+
+def _markdown_owned_section(
+    text: str,
+    heading: str,
+    label: str,
+) -> tuple[str, int, int]:
+    heading_syntax = re.fullmatch(r"(#{1,6})[ \t]+[^\r\n]+", heading)
+    if heading_syntax is None:
+        raise AssertionError(f"{label}: invalid Markdown heading {heading!r}")
+
+    headings = _markdown_heading_spans(text)
+    matches = [item for item in headings if item[0] == heading]
+    if len(matches) != 1:
+        raise AssertionError(
+            f"{label}: expected exactly one Markdown heading {heading!r}; "
+            f"found {len(matches)}"
+        )
+
+    _, _, heading_start, section_start = matches[0]
+    heading_level = len(heading_syntax.group(1))
+    section_end = len(text)
+    for _, level, start, _ in headings:
+        if start > heading_start and level <= heading_level:
+            section_end = start
+            break
+    return text[section_start:section_end], heading_start, section_end
+
+
+def _markdown_blockquote_content(line: str) -> tuple[int, str]:
+    depth = 0
+    position = 0
+    while position < len(line):
+        marker = re.match(r" {0,3}>[ \t]?", line[position:])
+        if marker is None:
+            break
+        position += marker.end()
+        depth += 1
+    return depth, line[position:]
+
+
+def _markdown_column_width(text: str) -> int:
+    column = 0
+    for char in text:
+        if char == "\t":
+            column += 4 - (column % 4)
+        else:
+            column += 1
+    return column
+
+
+def _markdown_leading_indent(line: str) -> tuple[int, int]:
+    column = 0
+    index = 0
+    while index < len(line) and line[index] in " \t":
+        if line[index] == "\t":
+            column += 4 - (column % 4)
+        else:
+            column += 1
+        index += 1
+    return column, index
+
+
+def _markdown_indent_index(line: str, target_column: int) -> int | None:
+    if target_column == 0:
+        return 0
+    column = 0
+    index = 0
+    while index < len(line) and line[index] in " \t":
+        if line[index] == "\t":
+            column += 4 - (column % 4)
+        else:
+            column += 1
+        index += 1
+        if column >= target_column:
+            return index
+    return None
+
+
+def _markdown_list_prefix(line: str) -> tuple[int, int] | None:
+    marker = re.match(
+        r"^(?P<indent>[ \t]*)(?:[-+*]|\d{1,9}[.)])(?P<spacing>[ \t]+)",
+        line,
+    )
+    if marker is None:
+        return None
+    return (
+        _markdown_column_width(marker.group("indent")),
+        _markdown_column_width(marker.group(0)),
+    )
+
+
+def _markdown_visible_content(text: str) -> str:
+    visible_lines: list[str] = []
+    fence_char: str | None = None
+    fence_length = 0
+    fence_quote_depth: int | None = None
+    fence_list_indent: int | None = None
+    in_html_comment = False
+    list_stacks: dict[int, list[tuple[int, int]]] = {}
+
+    for raw_line in text.splitlines():
+        line = raw_line.rstrip("\r\n")
+        if fence_char is not None:
+            closing_fence = _markdown_fence_candidate(
+                line,
+                closing=True,
+            )
+            if closing_fence is not None:
+                marker, suffix = closing_fence
+                if (
+                    marker[0] == fence_char
+                    and len(marker) >= fence_length
+                    and not suffix.strip()
+                ):
+                    fence_char = None
+                    fence_length = 0
+                    fence_quote_depth = None
+                    fence_list_indent = None
+                continue
+            if fence_list_indent is None:
+                continue
+            quote_depth, list_line = _markdown_blockquote_content(line)
+            leading, _ = _markdown_leading_indent(list_line)
+            if (
+                quote_depth == fence_quote_depth
+                and leading >= fence_list_indent
+            ):
+                content_index = _markdown_indent_index(
+                    list_line,
+                    fence_list_indent,
+                )
+                if content_index is None:
+                    continue
+                closing_fence = _markdown_fence_candidate(
+                    list_line[content_index:],
+                    closing=True,
+                )
+                if closing_fence is not None:
+                    marker, suffix = closing_fence
+                    if (
+                        marker[0] == fence_char
+                        and len(marker) >= fence_length
+                        and not suffix.strip()
+                    ):
+                        fence_char = None
+                        fence_length = 0
+                        fence_quote_depth = None
+                        fence_list_indent = None
+                continue
+            fence_char = None
+            fence_length = 0
+            fence_quote_depth = None
+            fence_list_indent = None
+
+        visible_line, in_html_comment = (
+            _markdown_visible_outside_html_comment(
+                line,
+                in_html_comment,
+            )
+        )
+        quote_depth, list_line = _markdown_blockquote_content(
+            visible_line
+        )
+        stack = list_stacks.setdefault(quote_depth, [])
+        list_prefix = _markdown_list_prefix(list_line)
+        active_list_indent: int | None = None
+        logical_line = list_line
+
+        if list_prefix is not None:
+            base_indent, content_indent = list_prefix
+            valid_list_item = (
+                base_indent <= 3
+                or (
+                    bool(stack)
+                    and (
+                        base_indent == stack[-1][0]
+                        or base_indent >= stack[-1][1]
+                    )
+                )
+            )
+            if valid_list_item:
+                while stack and base_indent <= stack[-1][0]:
+                    stack.pop()
+                stack.append((base_indent, content_indent))
+                active_list_indent = content_indent
+            else:
+                list_prefix = None
+
+        if list_prefix is None:
+            if not list_line.strip():
+                visible_lines.append(visible_line)
+                continue
+            leading, _ = _markdown_leading_indent(list_line)
+            while stack and leading < stack[-1][1]:
+                stack.pop()
+            if stack:
+                active_list_indent = stack[-1][1]
+                relative_indent = leading - active_list_indent
+                if relative_indent >= 4:
+                    continue
+                content_index = _markdown_indent_index(
+                    list_line,
+                    active_list_indent,
+                )
+                if content_index is None:
+                    continue
+                logical_line = list_line[content_index:]
+            elif leading >= 4:
+                continue
+
+        opening_fence = _markdown_fence_candidate(visible_line)
+        if opening_fence is None and logical_line != list_line:
+            opening_fence = _markdown_fence_candidate(logical_line)
+            if opening_fence is not None:
+                fence_quote_depth = quote_depth
+                fence_list_indent = active_list_indent
+        if opening_fence is not None and not (
+            opening_fence[0].startswith("`")
+            and "`" in opening_fence[1]
+        ):
+            marker = opening_fence[0]
+            fence_char = marker[0]
+            fence_length = len(marker)
+            continue
+        fence_quote_depth = None
+        fence_list_indent = None
+        visible_lines.append(visible_line)
+
+    return "\n".join(visible_lines)
+
+
+def validate_governed_caveman_lite(
+    skill: str,
+    response_patterns: str,
+    readme: str | None = None,
+    readme_cn: str | None = None,
+) -> None:
+    frontmatter_match = re.match(
+        r"\A---\r?\n(?P<frontmatter>.*?)\r?\n---(?:\r?\n|\Z)",
+        skill,
+        flags=re.DOTALL,
+    )
+    if frontmatter_match is None:
+        raise AssertionError(
+            "SKILL.md governed Caveman Lite frontmatter: "
+            "missing YAML frontmatter"
+        )
+    try:
+        frontmatter = _load_governed_frontmatter(
+            frontmatter_match.group("frontmatter")
+        )
+    except Exception as exc:
+        raise AssertionError(
+            "SKILL.md governed Caveman Lite frontmatter: invalid YAML"
+        ) from exc
+    if not isinstance(frontmatter, dict):
+        raise AssertionError(
+            "SKILL.md governed Caveman Lite frontmatter: "
+            "frontmatter must be a mapping"
+        )
+    description = frontmatter.get("description")
+    if not isinstance(description, str):
+        raise AssertionError(
+            "SKILL.md governed Caveman Lite frontmatter: "
+            "description must be a string"
+        )
+    require(
+        description,
+        "caveman 风格摘要",
+        "SKILL.md legacy Caveman frontmatter",
+    )
+    for command in ("OpenSpec 精简模式", "OpenSpec 正常模式"):
+        require(
+            description,
+            command,
+            "SKILL.md governed Caveman Lite frontmatter",
+        )
+
+    skill_profile, _, _ = _markdown_owned_section(
+        skill,
+        "## Governed Caveman Lite output mode",
+        "SKILL.md governed Caveman Lite",
+    )
+    normalized_skill_profile = " ".join(
+        _markdown_visible_content(skill_profile).split()
+    )
+    for obligation in GOVERNED_CAVEMAN_LITE_SKILL_OBLIGATIONS:
+        require(
+            normalized_skill_profile,
+            obligation,
+            "SKILL.md governed Caveman Lite",
+        )
+
+    legacy_skill_profile, _, _ = _markdown_owned_section(
+        skill,
+        "## Legacy request-scoped output compatibility",
+        "SKILL.md legacy request-scoped brevity",
+    )
+    normalized_legacy_skill_profile = " ".join(
+        _markdown_visible_content(legacy_skill_profile).split()
+    )
+    for obligation in LEGACY_REQUEST_SCOPED_BREVITY_OBLIGATIONS:
+        require(
+            normalized_legacy_skill_profile,
+            obligation,
+            "SKILL.md legacy request-scoped brevity",
+        )
+
+    _, token_budget_heading_start, token_budget_end = _markdown_owned_section(
+        response_patterns,
+        "## Token budget control",
+        "response-patterns.md governed Caveman Lite parent",
+    )
+    response_profile, response_heading_start, response_profile_end = (
+        _markdown_owned_section(
+            response_patterns,
+            "### Governed Caveman Lite",
+            "response-patterns.md governed Caveman Lite",
+        )
+    )
+    if not (
+        token_budget_heading_start
+        < response_heading_start
+        < response_profile_end
+        <= token_budget_end
+    ):
+        raise AssertionError(
+            "response-patterns.md governed Caveman Lite: "
+            "heading must be owned by ## Token budget control"
+        )
+    normalized_response_profile = " ".join(
+        _markdown_visible_content(response_profile).split()
+    )
+    for obligation in GOVERNED_CAVEMAN_LITE_RESPONSE_OBLIGATIONS:
+        require(
+            normalized_response_profile,
+            obligation,
+            "response-patterns.md governed Caveman Lite",
+        )
+
+    legacy_response, legacy_response_heading_start, legacy_response_end = (
+        _markdown_owned_section(
+            response_patterns,
+            "### Legacy request-scoped brevity",
+            "response-patterns.md legacy request-scoped brevity",
+        )
+    )
+    if not (
+        token_budget_heading_start
+        < legacy_response_heading_start
+        < legacy_response_end
+        <= token_budget_end
+    ):
+        raise AssertionError(
+            "response-patterns.md legacy request-scoped brevity: "
+            "heading must be owned by ## Token budget control"
+        )
+    normalized_legacy_response = " ".join(
+        _markdown_visible_content(legacy_response).split()
+    )
+    for obligation in LEGACY_REQUEST_SCOPED_BREVITY_OBLIGATIONS:
+        require(
+            normalized_legacy_response,
+            obligation,
+            "response-patterns.md legacy request-scoped brevity",
+        )
+
+    if (readme is None) != (readme_cn is None):
+        raise AssertionError(
+            "governed Caveman Lite requires both bilingual READMEs or neither"
+        )
+    if readme is None:
+        return
+
+    for owner, text, heading in (
+        ("README.md", readme, "## Governed Caveman Lite"),
+        ("README_cn.md", readme_cn, "## 治理精简模式"),
+    ):
+        section, _, _ = _markdown_owned_section(
+            text,
+            heading,
+            f"{owner} governed Caveman Lite",
+        )
+        normalized_section = " ".join(
+            _markdown_visible_content(section).split()
+        )
+        for command in ("OpenSpec 精简模式：<任务>", "OpenSpec 正常模式"):
+            require(
+                normalized_section,
+                command,
+                f"{owner} governed Caveman Lite",
+            )
+
+
 def validate_project_learning_gate(
     skill: str,
     approved: str,
@@ -1367,6 +2016,10 @@ def main(argv: list[str] | None = None) -> int:
     request_modes = read(root / "references" / "request-modes.md")
     approved = read(root / "references" / "approved-implementation-workflow.md")
     response_patterns = read(root / "references" / "response-patterns.md")
+    readme_path = root / "README.md"
+    readme_cn_path = root / "README_cn.md"
+    readme = read(readme_path) if readme_path.is_file() else None
+    readme_cn = read(readme_cn_path) if readme_cn_path.is_file() else None
     completion = read(root / "references" / "completion-contract.md")
     self_rule = read(root / "references" / "self-evolution-rule.md")
     evidence = read(root / "references" / "step-evidence-gate.md")
@@ -1382,6 +2035,12 @@ def main(argv: list[str] | None = None) -> int:
 
     validate_frontmatter(skill)
     validate_reference_links(root, skill)
+    validate_governed_caveman_lite(
+        skill,
+        response_patterns,
+        readme,
+        readme_cn,
+    )
     validate_completion_contract(
         skill, completion, response_patterns, approved, evidence
     )

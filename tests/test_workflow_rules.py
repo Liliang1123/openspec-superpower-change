@@ -2,16 +2,313 @@ import importlib.util
 import os
 import hashlib
 import json
+import re
 import tempfile
 import unittest
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-BRIEF_ROOT = Path(os.environ.get(
-    "BRIEF_SKILL_SOURCE", ROOT.parent / "codex-brief-antigravity-review"
-)).resolve()
+
+
+def resolve_brief_root() -> Path:
+    configured = os.environ.get("BRIEF_SKILL_SOURCE")
+    if configured:
+        return Path(configured).resolve()
+
+    companion_name = "codex-brief-antigravity-review"
+    candidates = [ROOT.parent / companion_name]
+    git_pointer = ROOT / ".git"
+    if git_pointer.is_file():
+        marker, separator, raw_git_dir = (
+            git_pointer.read_text(encoding="utf-8").strip().partition(":")
+        )
+        if marker == "gitdir" and separator and raw_git_dir.strip():
+            git_dir = Path(raw_git_dir.strip())
+            if not git_dir.is_absolute():
+                git_dir = (ROOT / git_dir).resolve()
+            common_git_dir = next(
+                (
+                    parent
+                    for parent in (git_dir, *git_dir.parents)
+                    if parent.name == ".git"
+                ),
+                None,
+            )
+            if common_git_dir is not None:
+                candidates.append(
+                    common_git_dir.parent.parent / companion_name
+                )
+
+    for candidate in candidates:
+        if (candidate / "scripts" / "validate_templates.py").is_file():
+            return candidate.resolve()
+    return candidates[0].resolve()
+
+
+BRIEF_ROOT = resolve_brief_root()
 BRIEF_HANDOFF = BRIEF_ROOT / "references" / "handoff-contract.md"
+
+GOVERNED_CAVEMAN_LITE_PROFILE_OBLIGATIONS = (
+    "governed-caveman-lite",
+    "OpenSpec 精简模式：<任务>",
+    "send `OpenSpec 精简模式` before the task",
+    "OpenSpec 正常模式",
+    "concise professional full sentences",
+    "current conversation",
+    "until disabled or the conversation ends",
+    "A new conversation starts in normal output mode",
+    "no account, repository, or runtime preference",
+    "latest explicit OpenSpec mode command",
+    "even after a prior Caveman-style instruction",
+    "presentation state only",
+    "never invokes or delegates to a separate `caveman` skill",
+    "works when one is unavailable",
+    "does not activate by default",
+    "routing, approval, evidence, Review, verification, completion, Git, or publication authority",
+)
+GOVERNED_CAVEMAN_LITE_PROTECTED_OBLIGATIONS = (
+    "Gate 0",
+    "OpenSpec artifacts",
+    "Superpowers implementation plans",
+    "Handoff/evidence artifacts",
+    "canonical state transitions",
+    "PASS/FAIL/BLOCKED",
+    "final verification",
+    "final Review",
+    "critical commands",
+    "rollback instructions",
+    "security warnings",
+    "destructive confirmations",
+    "sensitive-data handling",
+    "every required field and ordering constraint",
+)
+GOVERNED_CAVEMAN_LITE_SKILL_OBLIGATIONS = (
+    GOVERNED_CAVEMAN_LITE_PROFILE_OBLIGATIONS
+    + ("mandatory governance/approval fields",)
+    + GOVERNED_CAVEMAN_LITE_PROTECTED_OBLIGATIONS
+)
+GOVERNED_CAVEMAN_LITE_RESPONSE_OBLIGATIONS = (
+    GOVERNED_CAVEMAN_LITE_PROFILE_OBLIGATIONS
+    + ("mandatory governance-step or approval field",)
+    + GOVERNED_CAVEMAN_LITE_PROTECTED_OBLIGATIONS
+)
+LEGACY_REQUEST_SCOPED_BREVITY_OBLIGATIONS = (
+    "少 token/更短/更精简/像 caveman 说",
+    "request-scoped compression",
+    "current request",
+    "does not activate or persist `governed-caveman-lite`",
+    "Only `OpenSpec 精简模式` activates the named conversation profile",
+    "same protected-surface rules",
+)
+
+
+def markdown_visible_outside_html_comment(
+    line: str,
+    in_comment: bool,
+) -> tuple[str, bool]:
+    visible: list[str] = []
+    cursor = 0
+    while cursor < len(line):
+        if in_comment:
+            comment_end = line.find("-->", cursor)
+            if comment_end == -1:
+                return "".join(visible), True
+            cursor = comment_end + 3
+            in_comment = False
+        else:
+            comment_start = line.find("<!--", cursor)
+            if comment_start == -1:
+                visible.append(line[cursor:])
+                break
+            visible.append(line[cursor:comment_start])
+            cursor = comment_start + 4
+            in_comment = True
+    return "".join(visible), in_comment
+
+
+def markdown_fence_candidate(
+    line: str,
+    *,
+    closing: bool = False,
+) -> tuple[str, str] | None:
+    position = 0
+    container_patterns = (
+        r" {0,3}>[ \t]?",
+        r" {0,3}(?:[-+*]|\d{1,9}[.)])[ \t]+",
+    )
+    while position < len(line):
+        for pattern in container_patterns:
+            container = re.match(pattern, line[position:])
+            if container is not None:
+                position += container.end()
+                break
+        else:
+            break
+
+    candidate = re.match(
+        r"^ {0,3}(`{3,}|~{3,})(.*)$",
+        line[position:],
+    )
+    if candidate is not None:
+        return candidate.group(1), candidate.group(2)
+    if closing:
+        continuation = re.match(
+            r"^ {2,}(`{3,}|~{3,})(.*)$",
+            line[position:],
+        )
+        if continuation is not None:
+            return continuation.group(1), continuation.group(2)
+    return None
+
+
+def markdown_heading_spans(text: str) -> list[tuple[str, int, int, int]]:
+    headings: list[tuple[str, int, int, int]] = []
+    fence_char: str | None = None
+    fence_length = 0
+    in_html_comment = False
+    offset = 0
+
+    for raw_line in text.splitlines(keepends=True):
+        line = raw_line.rstrip("\r\n")
+        line_end = offset + len(line)
+        if fence_char is not None:
+            closing_fence = markdown_fence_candidate(line, closing=True)
+            if closing_fence is not None:
+                marker, suffix = closing_fence
+                if (
+                    marker[0] == fence_char
+                    and len(marker) >= fence_length
+                    and not suffix.strip()
+                ):
+                    fence_char = None
+                    fence_length = 0
+        else:
+            visible_line, in_html_comment = (
+                markdown_visible_outside_html_comment(
+                    line,
+                    in_html_comment,
+                )
+            )
+            opening_fence = markdown_fence_candidate(visible_line)
+            if opening_fence is not None and not (
+                opening_fence[0].startswith("`")
+                and "`" in opening_fence[1]
+            ):
+                marker = opening_fence[0]
+                fence_char = marker[0]
+                fence_length = len(marker)
+            else:
+                heading_match = re.fullmatch(
+                    r"(#{1,6})[ \t]+[^\r\n]+",
+                    visible_line,
+                )
+                if heading_match is not None and line.startswith("#"):
+                    headings.append(
+                        (
+                            visible_line,
+                            len(heading_match.group(1)),
+                            offset,
+                            line_end,
+                        )
+                    )
+        offset += len(raw_line)
+
+    return headings
+
+
+def markdown_owned_section_bounds(text: str, heading: str) -> tuple[int, int]:
+    heading_syntax = re.fullmatch(r"(#{1,6})[ \t]+[^\r\n]+", heading)
+    if heading_syntax is None:
+        raise AssertionError(f"invalid Markdown heading: {heading!r}")
+
+    headings = markdown_heading_spans(text)
+    matches = [item for item in headings if item[0] == heading]
+    if len(matches) != 1:
+        raise AssertionError(
+            f"expected exactly one Markdown heading {heading!r}, found {len(matches)}"
+        )
+
+    _, _, _, section_start = matches[0]
+    heading_level = len(heading_syntax.group(1))
+    section_end = len(text)
+    for _, level, start, _ in headings:
+        if start > matches[0][2] and level <= heading_level:
+            section_end = start
+            break
+    return section_start, section_end
+
+
+def markdown_owned_section(text: str, heading: str) -> str:
+    section_start, section_end = markdown_owned_section_bounds(text, heading)
+    return text[section_start:section_end]
+
+
+def strip_markdown_owned_obligation(
+    text: str,
+    heading: str,
+    needle: str,
+) -> str:
+    section_start, section_end = markdown_owned_section_bounds(text, heading)
+    section = text[section_start:section_end]
+    if needle not in section:
+        raise AssertionError(
+            f"{needle!r} missing from Markdown owned section {heading!r}"
+        )
+    section = section.replace(needle, "removed protected contract")
+    return text[:section_start] + section + text[section_end:]
+
+
+def replace_owned_obligation_with_decoy(
+    text: str,
+    heading: str,
+    needle: str,
+    decoy: str,
+) -> str:
+    section_start, section_end = markdown_owned_section_bounds(text, heading)
+    section = text[section_start:section_end]
+    if needle not in section:
+        raise AssertionError(
+            f"{needle!r} missing from Markdown owned section {heading!r}"
+        )
+    section = section.replace(needle, "removed protected contract")
+    section = f"{section.rstrip()}\n\n{decoy}\n"
+    return text[:section_start] + section + text[section_end:]
+
+
+def append_owned_fenced_example(
+    text: str,
+    heading: str,
+    example: str,
+) -> str:
+    section_start, section_end = markdown_owned_section_bounds(text, heading)
+    section = text[section_start:section_end]
+    section = f"{section.rstrip()}\n\n{example}\n"
+    return text[:section_start] + section + text[section_end:]
+
+
+def replace_owned_heading_with_fenced_decoy(
+    text: str,
+    heading: str,
+    renamed_heading: str,
+    fence_marker: str,
+) -> str:
+    section = markdown_owned_section(text, heading)
+    matches = list(re.finditer(rf"(?m)^{re.escape(heading)}$", text))
+    if len(matches) != 1:
+        raise AssertionError(
+            f"expected one raw heading {heading!r}, found {len(matches)}"
+        )
+    if not section.endswith(("\n", "\r")):
+        section += "\n"
+    replacement = (
+        f"{renamed_heading}\n\n"
+        f"{fence_marker}markdown\n"
+        f"{heading}{section}"
+        f"{fence_marker}"
+    )
+    match = matches[0]
+    return text[:match.start()] + replacement + text[match.end():]
 
 
 def artifact(path: str) -> dict[str, str]:
@@ -166,6 +463,11 @@ class WorkflowRulesTest(unittest.TestCase):
     def setUpClass(cls):
         cls.validator = load_validator()
         cls.skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+        cls.response_patterns = (
+            ROOT / "references" / "response-patterns.md"
+        ).read_text(encoding="utf-8")
+        cls.readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        cls.readme_cn = (ROOT / "README_cn.md").read_text(encoding="utf-8")
         cls.request_modes = (ROOT / "references" / "request-modes.md").read_text(encoding="utf-8")
         cls.approved = (ROOT / "references" / "approved-implementation-workflow.md").read_text(encoding="utf-8")
         cls.completion = (
@@ -190,6 +492,714 @@ class WorkflowRulesTest(unittest.TestCase):
         cls.learning = (
             ROOT / "references" / "learning-candidate-pipeline.md"
         ).read_text(encoding="utf-8")
+
+    def test_governed_caveman_lite_profile_is_entry_discoverable_and_bounded(self):
+        frontmatter = self.skill.split("---", 2)[1]
+        frontmatter_data = self.validator.yaml_load(frontmatter)
+        self.assertIsInstance(frontmatter_data, dict)
+        description = frontmatter_data["description"]
+        self.assertIsInstance(description, str)
+        for command in ("OpenSpec 精简模式", "OpenSpec 正常模式"):
+            self.assertIn(command, description)
+        self.assertIn("caveman 风格摘要", description)
+
+        heading = "## Governed Caveman Lite output mode"
+        profile = markdown_owned_section(self.skill, heading)
+        normalized_profile = " ".join(profile.split())
+        for obligation in GOVERNED_CAVEMAN_LITE_SKILL_OBLIGATIONS:
+            self.assertIn(obligation, normalized_profile)
+
+        response_heading = "### Governed Caveman Lite"
+        response_profile = markdown_owned_section(
+            self.response_patterns,
+            response_heading,
+        )
+        normalized_response_profile = " ".join(response_profile.split())
+        for obligation in GOVERNED_CAVEMAN_LITE_RESPONSE_OBLIGATIONS:
+            self.assertIn(obligation, normalized_response_profile)
+
+        legacy_profile = markdown_owned_section(
+            self.skill,
+            "## Legacy request-scoped output compatibility",
+        )
+        normalized_legacy_profile = " ".join(legacy_profile.split())
+        for obligation in LEGACY_REQUEST_SCOPED_BREVITY_OBLIGATIONS:
+            self.assertIn(obligation, normalized_legacy_profile)
+
+        legacy_response = markdown_owned_section(
+            self.response_patterns,
+            "### Legacy request-scoped brevity",
+        )
+        normalized_legacy_response = " ".join(legacy_response.split())
+        for obligation in LEGACY_REQUEST_SCOPED_BREVITY_OBLIGATIONS:
+            self.assertIn(obligation, normalized_legacy_response)
+
+    def test_governed_caveman_lite_validator_binds_owning_artifacts(self):
+        self.assertTrue(
+            hasattr(self.validator, "validate_governed_caveman_lite"),
+            "validator must own governed Caveman Lite checks",
+        )
+        self.validator.validate_governed_caveman_lite(
+            self.skill, self.response_patterns, self.readme, self.readme_cn
+        )
+        self.validator.validate_governed_caveman_lite(
+            self.skill, self.response_patterns
+        )
+        with self.assertRaisesRegex(AssertionError, "bilingual READMEs"):
+            self.validator.validate_governed_caveman_lite(
+                self.skill, self.response_patterns, self.readme, None
+            )
+        with self.assertRaisesRegex(AssertionError, "bilingual READMEs"):
+            self.validator.validate_governed_caveman_lite(
+                self.skill, self.response_patterns, None, self.readme_cn
+            )
+
+        prefix, frontmatter, body = self.skill.split("---", 2)
+        frontmatter_data = self.validator.yaml_load(frontmatter)
+        self.assertIsInstance(frontmatter_data, dict)
+        description = frontmatter_data["description"]
+        self.assertIsInstance(description, str)
+        for needle, error_label in (
+            (
+                "OpenSpec 精简模式",
+                "SKILL.md governed Caveman Lite frontmatter",
+            ),
+            (
+                "OpenSpec 正常模式",
+                "SKILL.md governed Caveman Lite frontmatter",
+            ),
+            (
+                "caveman 风格摘要",
+                "SKILL.md legacy Caveman frontmatter",
+            ),
+        ):
+            with self.subTest(owner="SKILL.md frontmatter", needle=needle):
+                self.assertIn(needle, description)
+                self.assertIn(needle, body)
+                stripped_description = description.replace(
+                    needle,
+                    "removed frontmatter description value",
+                )
+                self.assertNotIn(needle, stripped_description)
+                mutated_frontmatter = frontmatter.replace(
+                    description,
+                    stripped_description,
+                    1,
+                )
+                mutated_frontmatter += (
+                    f'# frontmatter decoy: {needle}\n'
+                    f'frontmatter_decoy: "{needle}"\n'
+                )
+                mutated = f"{prefix}---{mutated_frontmatter}---{body}"
+                _, mutated_frontmatter_text, mutated_body = mutated.split(
+                    "---",
+                    2,
+                )
+                mutated_data = self.validator.yaml_load(
+                    mutated_frontmatter_text
+                )
+                self.assertNotIn(needle, mutated_data["description"])
+                self.assertEqual(mutated_data["frontmatter_decoy"], needle)
+                self.assertIn(needle, mutated_frontmatter_text)
+                self.assertIn(needle, mutated_body)
+                with self.assertRaisesRegex(
+                    AssertionError,
+                    error_label,
+                ):
+                    self.validator.validate_governed_caveman_lite(
+                        mutated,
+                        self.response_patterns,
+                        self.readme,
+                        self.readme_cn,
+                    )
+
+        for needle in GOVERNED_CAVEMAN_LITE_SKILL_OBLIGATIONS:
+            with self.subTest(owner="SKILL.md", needle=needle):
+                mutated = strip_markdown_owned_obligation(
+                    self.skill, "## Governed Caveman Lite output mode", needle
+                )
+                with self.assertRaisesRegex(
+                    AssertionError, "SKILL.md governed Caveman Lite"
+                ):
+                    self.validator.validate_governed_caveman_lite(
+                        mutated,
+                        self.response_patterns,
+                        self.readme,
+                        self.readme_cn,
+                    )
+
+        for needle in GOVERNED_CAVEMAN_LITE_RESPONSE_OBLIGATIONS:
+            with self.subTest(owner="response-patterns.md", needle=needle):
+                mutated = strip_markdown_owned_obligation(
+                    self.response_patterns, "### Governed Caveman Lite", needle
+                )
+                with self.assertRaisesRegex(
+                    AssertionError, "response-patterns.md governed Caveman Lite"
+                ):
+                    self.validator.validate_governed_caveman_lite(
+                        self.skill, mutated, self.readme, self.readme_cn
+                    )
+
+        for owner, text, heading, decoy_heading, sibling_boundary, error_label in (
+            (
+                "SKILL.md",
+                self.skill,
+                "## Legacy request-scoped output compatibility",
+                "## Unrelated legacy output compatibility",
+                "\n## Mandatory Entry Gate",
+                "SKILL.md legacy request-scoped brevity",
+            ),
+            (
+                "response-patterns.md",
+                self.response_patterns,
+                "### Legacy request-scoped brevity",
+                "### Unrelated legacy request brevity",
+                "\n### Governed Caveman Lite",
+                "response-patterns.md legacy request-scoped brevity",
+            ),
+        ):
+            self.assertNotIn(decoy_heading, text)
+            for needle in LEGACY_REQUEST_SCOPED_BREVITY_OBLIGATIONS:
+                with self.subTest(owner=owner, legacy_needle=needle):
+                    mutated = strip_markdown_owned_obligation(
+                        text,
+                        heading,
+                        needle,
+                    )
+                    self.assertEqual(mutated.count(sibling_boundary), 1)
+                    mutated = mutated.replace(
+                        sibling_boundary,
+                        f"\n\n{decoy_heading}\n\n{needle}\n{sibling_boundary}",
+                        1,
+                    )
+                    self.assertIn(
+                        needle,
+                        markdown_owned_section(mutated, decoy_heading),
+                    )
+                    skill = mutated if owner == "SKILL.md" else self.skill
+                    response_patterns = (
+                        mutated
+                        if owner == "response-patterns.md"
+                        else self.response_patterns
+                    )
+                    with self.assertRaisesRegex(AssertionError, error_label):
+                        self.validator.validate_governed_caveman_lite(
+                            skill,
+                            response_patterns,
+                            self.readme,
+                            self.readme_cn,
+                        )
+
+        for owner, text, heading in (
+            ("README.md", self.readme, "## Governed Caveman Lite"),
+            ("README_cn.md", self.readme_cn, "## 治理精简模式"),
+        ):
+            decoy_heading = "## Unrelated command example"
+            self.assertNotIn(decoy_heading, text)
+            for needle in ("OpenSpec 精简模式：<任务>", "OpenSpec 正常模式"):
+                with self.subTest(owner=owner, needle=needle):
+                    mutated = strip_markdown_owned_obligation(
+                        text,
+                        heading,
+                        needle,
+                    )
+                    mutated = (
+                        f"{mutated.rstrip()}\n\n{decoy_heading}\n\n{needle}\n"
+                    )
+                    self.assertIn(
+                        needle,
+                        markdown_owned_section(mutated, decoy_heading),
+                    )
+                    readme = mutated if owner == "README.md" else self.readme
+                    readme_cn = (
+                        mutated if owner == "README_cn.md" else self.readme_cn
+                    )
+                    with self.assertRaisesRegex(AssertionError, owner):
+                        self.validator.validate_governed_caveman_lite(
+                            self.skill,
+                            self.response_patterns,
+                            readme,
+                            readme_cn,
+                        )
+
+    def test_governed_caveman_lite_validator_ignores_fenced_heading_decoys(self):
+        for artifact, text, heading, renamed_heading, fence, error_label in (
+            (
+                "skill",
+                self.skill,
+                "## Governed Caveman Lite output mode",
+                "## Renamed governed output mode",
+                "```",
+                "SKILL.md governed Caveman Lite",
+            ),
+            (
+                "skill",
+                self.skill,
+                "## Legacy request-scoped output compatibility",
+                "## Renamed legacy output compatibility",
+                "~~~",
+                "SKILL.md legacy request-scoped brevity",
+            ),
+            (
+                "response_patterns",
+                self.response_patterns,
+                "### Governed Caveman Lite",
+                "### Renamed governed response profile",
+                "```",
+                "response-patterns.md governed Caveman Lite",
+            ),
+            (
+                "response_patterns",
+                self.response_patterns,
+                "### Legacy request-scoped brevity",
+                "### Renamed legacy response brevity",
+                "~~~",
+                "response-patterns.md legacy request-scoped brevity",
+            ),
+            (
+                "readme",
+                self.readme,
+                "## Governed Caveman Lite",
+                "## Renamed governed README profile",
+                "```",
+                "README.md governed Caveman Lite",
+            ),
+            (
+                "readme_cn",
+                self.readme_cn,
+                "## 治理精简模式",
+                "## 重命名的治理精简模式",
+                "~~~",
+                "README_cn.md governed Caveman Lite",
+            ),
+        ):
+            with self.subTest(artifact=artifact, heading=heading, fence=fence):
+                mutated = replace_owned_heading_with_fenced_decoy(
+                    text,
+                    heading,
+                    renamed_heading,
+                    fence,
+                )
+                self.assertIn(f"{fence}markdown\n{heading}", mutated)
+                with self.assertRaisesRegex(
+                    AssertionError,
+                    "found 0",
+                ):
+                    markdown_owned_section(mutated, heading)
+                if artifact == "response_patterns":
+                    token_budget = markdown_owned_section(
+                        mutated,
+                        "## Token budget control",
+                    )
+                    self.assertIn(
+                        f"{fence}markdown\n{heading}",
+                        token_budget,
+                    )
+
+                skill = mutated if artifact == "skill" else self.skill
+                response_patterns = (
+                    mutated
+                    if artifact == "response_patterns"
+                    else self.response_patterns
+                )
+                readme = mutated if artifact == "readme" else self.readme
+                readme_cn = (
+                    mutated if artifact == "readme_cn" else self.readme_cn
+                )
+                with self.assertRaisesRegex(
+                    AssertionError,
+                    re.escape(error_label),
+                ):
+                    self.validator.validate_governed_caveman_lite(
+                        skill,
+                        response_patterns,
+                        readme,
+                        readme_cn,
+                    )
+
+    def test_governed_caveman_lite_fallback_strips_yaml_inline_comments(self):
+        prefix, _, body = self.skill.split("---", 2)
+        inline_comment_frontmatter = (
+            "\nname: openspec-superpower-change\n"
+            "description: ordinary # OpenSpec 精简模式 OpenSpec 正常模式 "
+            "caveman 风格摘要\n"
+        )
+        mutated = f"{prefix}---{inline_comment_frontmatter}---{body}"
+        original_yaml = self.validator.yaml
+        try:
+            self.validator.yaml = None
+            with self.assertRaisesRegex(AssertionError, "frontmatter"):
+                self.validator.validate_governed_caveman_lite(
+                    mutated,
+                    self.response_patterns,
+                    self.readme,
+                    self.readme_cn,
+                )
+        finally:
+            self.validator.yaml = original_yaml
+
+    def test_governed_caveman_lite_fallback_rejects_malformed_quoted_frontmatter(
+        self,
+    ):
+        prefix, _, body = self.skill.split("---", 2)
+        malformed_descriptions = (
+            (
+                'description: "OpenSpec 精简模式 OpenSpec 正常模式 '
+                "caveman 风格摘要"
+            ),
+            (
+                "description: 'OpenSpec 精简模式 OpenSpec 正常模式 "
+                "caveman 风格摘要"
+            ),
+            (
+                r'description: "OpenSpec 精简模式 OpenSpec 正常模式 '
+                r'caveman 风格摘要 \q"'
+            ),
+            (
+                'description: "OpenSpec 精简模式 OpenSpec 正常模式 '
+                'caveman 风格摘要" trailing'
+            ),
+        )
+        original_yaml = self.validator.yaml
+        yaml_implementations = [None]
+        if original_yaml is not None:
+            yaml_implementations.append(original_yaml)
+        try:
+            for yaml_implementation in yaml_implementations:
+                self.validator.yaml = yaml_implementation
+                for description in malformed_descriptions:
+                    with self.subTest(
+                        fallback=yaml_implementation is None,
+                        description=description,
+                    ):
+                        frontmatter = (
+                            "\nname: openspec-superpower-change\n"
+                            f"{description}\n"
+                        )
+                        mutated = f"{prefix}---{frontmatter}---{body}"
+                        with self.assertRaisesRegex(
+                            AssertionError,
+                            "frontmatter|invalid YAML",
+                        ):
+                            self.validator.validate_governed_caveman_lite(
+                                mutated,
+                                self.response_patterns,
+                                self.readme,
+                                self.readme_cn,
+                            )
+        finally:
+            self.validator.yaml = original_yaml
+
+    def test_governed_caveman_lite_scanner_ignores_comments_and_containers(self):
+        scanner_fixture = """<!--
+## HTML comment decoy
+-->
+- ```markdown
+  ### List-fenced decoy
+  ````
+> ~~~
+> ### Blockquote-fenced decoy
+> ~~~~
+> - ```markdown
+>   ### Blockquote-list-fenced decoy
+>   ````
+- > ~~~
+  > ### List-blockquote-fenced decoy
+  > ~~~~
+> 1. ```markdown
+>    ### Blockquote-ordered-list-fenced decoy
+>    ````
+## Real owner
+"""
+        expected = ["## Real owner"]
+        self.assertEqual(
+            [item[0] for item in markdown_heading_spans(scanner_fixture)],
+            expected,
+        )
+        self.assertEqual(
+            [
+                item[0]
+                for item in self.validator._markdown_heading_spans(
+                    scanner_fixture
+                )
+            ],
+            expected,
+        )
+
+    def test_governed_caveman_lite_validator_rejects_fixed_owner_decoys(self):
+        skill_heading = "## Governed Caveman Lite output mode"
+        renamed_skill_heading = "## Renamed governed output mode"
+        skill_decoy = (
+            "<!--\n"
+            f"{skill_heading}\n"
+            + "\n".join(GOVERNED_CAVEMAN_LITE_SKILL_OBLIGATIONS)
+            + "\n-->"
+        )
+        mutated_skill = self.skill.replace(
+            skill_heading,
+            renamed_skill_heading,
+            1,
+        ).replace(
+            renamed_skill_heading,
+            f"{renamed_skill_heading}\n\n{skill_decoy}",
+            1,
+        )
+        with self.assertRaisesRegex(
+            AssertionError,
+            "SKILL.md governed Caveman Lite",
+        ):
+            self.validator.validate_governed_caveman_lite(
+                mutated_skill,
+                self.response_patterns,
+                self.readme,
+                self.readme_cn,
+            )
+
+        response_heading = "### Governed Caveman Lite"
+        renamed_response_heading = "### Renamed governed response profile"
+        response_decoy_lines = (
+            (response_heading,)
+            + GOVERNED_CAVEMAN_LITE_RESPONSE_OBLIGATIONS
+        )
+        response_decoy = (
+            "- ```markdown\n"
+            + "\n".join(f"  {line}" for line in response_decoy_lines)
+            + "\n  ````"
+        )
+        mutated_response = self.response_patterns.replace(
+            response_heading,
+            renamed_response_heading,
+            1,
+        ).replace(
+            renamed_response_heading,
+            f"{renamed_response_heading}\n\n{response_decoy}",
+            1,
+        )
+        self.assertIn(
+            response_decoy,
+            markdown_owned_section(
+                mutated_response,
+                "## Token budget control",
+            ),
+        )
+        with self.assertRaisesRegex(
+            AssertionError,
+            "response-patterns.md governed Caveman Lite",
+        ):
+            self.validator.validate_governed_caveman_lite(
+                self.skill,
+                mutated_response,
+                self.readme,
+                self.readme_cn,
+            )
+
+        readme_heading = "## Governed Caveman Lite"
+        renamed_readme_heading = "## Renamed governed README profile"
+        readme_decoy = (
+            "<!--\n"
+            f"{readme_heading}\n"
+            "OpenSpec 精简模式：<任务>\n"
+            "OpenSpec 正常模式\n"
+            "-->"
+        )
+        mutated_readme = self.readme.replace(
+            readme_heading,
+            renamed_readme_heading,
+            1,
+        ).replace(
+            renamed_readme_heading,
+            f"{renamed_readme_heading}\n\n{readme_decoy}",
+            1,
+        )
+        with self.assertRaisesRegex(AssertionError, "README.md"):
+            self.validator.validate_governed_caveman_lite(
+                self.skill,
+                self.response_patterns,
+                mutated_readme,
+                self.readme_cn,
+            )
+
+        readme_cn_heading = "## 治理精简模式"
+        renamed_readme_cn_heading = "## 重命名的治理精简模式"
+        readme_cn_decoy = (
+            "- ```markdown\n"
+            f"  {readme_cn_heading}\n"
+            "  OpenSpec 精简模式：<任务>\n"
+            "  OpenSpec 正常模式\n"
+            "  ````"
+        )
+        mutated_readme_cn = self.readme_cn.replace(
+            readme_cn_heading,
+            renamed_readme_cn_heading,
+            1,
+        ).replace(
+            renamed_readme_cn_heading,
+            f"{renamed_readme_cn_heading}\n\n{readme_cn_decoy}",
+            1,
+        )
+        with self.assertRaisesRegex(AssertionError, "README_cn.md"):
+            self.validator.validate_governed_caveman_lite(
+                self.skill,
+                self.response_patterns,
+                self.readme,
+                mutated_readme_cn,
+            )
+
+    def test_governed_caveman_lite_rejects_in_section_invisible_decoys(self):
+        decoy_templates = (
+            "<!--\n{needle}\n-->",
+            "```text\n{needle}\n```",
+            "- ```text\n  {needle}\n  ```",
+            "> ~~~text\n> {needle}\n> ~~~",
+            "> - ```text\n>   {needle}\n>   ```",
+            "- > ~~~text\n  > {needle}\n  > ~~~",
+            "10. Example:\n\n    ```text\n    {needle}\n    ```",
+            "-   Example:\n\n    ~~~text\n    {needle}\n    ~~~",
+            "    {needle}",
+            "        {needle}",
+            "\t{needle}",
+            " \t{needle}",
+            "- Rule:\n      {needle}",
+            "10. Rule:\n        {needle}",
+            "- Rule:\n  \t  {needle}",
+        )
+        owners = (
+            (
+                "skill",
+                self.skill,
+                "## Governed Caveman Lite output mode",
+                "critical commands",
+                "SKILL.md governed Caveman Lite",
+            ),
+            (
+                "skill",
+                self.skill,
+                "## Legacy request-scoped output compatibility",
+                "request-scoped compression",
+                "SKILL.md legacy request-scoped brevity",
+            ),
+            (
+                "response_patterns",
+                self.response_patterns,
+                "### Governed Caveman Lite",
+                "critical commands",
+                "response-patterns.md governed Caveman Lite",
+            ),
+            (
+                "response_patterns",
+                self.response_patterns,
+                "### Legacy request-scoped brevity",
+                "request-scoped compression",
+                "response-patterns.md legacy request-scoped brevity",
+            ),
+            (
+                "readme",
+                self.readme,
+                "## Governed Caveman Lite",
+                "OpenSpec 正常模式",
+                "README.md governed Caveman Lite",
+            ),
+            (
+                "readme_cn",
+                self.readme_cn,
+                "## 治理精简模式",
+                "OpenSpec 正常模式",
+                "README_cn.md governed Caveman Lite",
+            ),
+        )
+        for artifact, text, heading, needle, error_label in owners:
+            for decoy_template in decoy_templates:
+                decoy = decoy_template.format(needle=needle)
+                with self.subTest(
+                    artifact=artifact,
+                    heading=heading,
+                    decoy=decoy_template.splitlines()[0],
+                ):
+                    mutated = replace_owned_obligation_with_decoy(
+                        text,
+                        heading,
+                        needle,
+                        decoy,
+                    )
+                    skill = mutated if artifact == "skill" else self.skill
+                    response_patterns = (
+                        mutated
+                        if artifact == "response_patterns"
+                        else self.response_patterns
+                    )
+                    readme = mutated if artifact == "readme" else self.readme
+                    readme_cn = (
+                        mutated if artifact == "readme_cn" else self.readme_cn
+                    )
+                    with self.assertRaisesRegex(
+                        AssertionError,
+                        re.escape(error_label),
+                    ):
+                        self.validator.validate_governed_caveman_lite(
+                            skill,
+                            response_patterns,
+                            readme,
+                            readme_cn,
+                        )
+
+    def test_governed_caveman_lite_accepts_mixed_container_fenced_examples(
+        self,
+    ):
+        examples = (
+            "> - ```text\n>   harmless fenced example\n>   ```",
+            "- > ~~~text\n  > harmless fenced example\n  > ~~~",
+            (
+                "10. Example:\n\n"
+                "    ```text\n"
+                "    harmless fenced example\n"
+                "    ```"
+            ),
+            (
+                "-   Example:\n\n"
+                "    ~~~text\n"
+                "    harmless fenced example\n"
+                "    ~~~"
+            ),
+            "    harmless indented-code example",
+            "\tharmless tab-indented-code example",
+        )
+        for example in examples:
+            with self.subTest(example=example.splitlines()[0]):
+                mutated = append_owned_fenced_example(
+                    self.skill,
+                    "## Governed Caveman Lite output mode",
+                    example,
+                )
+                self.validator.validate_governed_caveman_lite(
+                    mutated,
+                    self.response_patterns,
+                    self.readme,
+                    self.readme_cn,
+                )
+
+    def test_governed_caveman_lite_accepts_visible_list_continuations(self):
+        examples = (
+            "- Rule:\n    critical commands",
+            "10. Rule:\n    critical commands",
+            "-   Rule:\n    critical commands",
+            "> - Rule:\n>     critical commands",
+            "- Rule:\n\tcritical commands",
+            "10. Rule:\n\tcritical commands",
+        )
+        for example in examples:
+            with self.subTest(example=example.splitlines()[0]):
+                mutated = replace_owned_obligation_with_decoy(
+                    self.skill,
+                    "## Governed Caveman Lite output mode",
+                    "critical commands",
+                    example,
+                )
+                self.validator.validate_governed_caveman_lite(
+                    mutated,
+                    self.response_patterns,
+                    self.readme,
+                    self.readme_cn,
+                )
 
     def test_description_does_not_claim_brief_or_external_batch_work(self):
         description = self.skill.split("---", 2)[1]

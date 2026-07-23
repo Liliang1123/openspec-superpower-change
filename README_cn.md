@@ -27,6 +27,15 @@
 - 在最终完成前，把高成本纠正与 Review finding 晋升为可发现的项目知识和可执行
   回归约束。
 
+## 治理精简模式
+
+内建且默认关闭的 `governed-caveman-lite` profile 会精简普通 Router 表达，同时
+保留专业、完整的句子。使用 `OpenSpec 精简模式：<任务>` 为当前会话启用，也可以
+先单独发送 `OpenSpec 精简模式`；使用 `OpenSpec 正常模式` 关闭。
+
+该 profile 只改变呈现方式，不依赖外部 Caveman Skill，也不会跨会话保存。治理
+字段、审批、证据、关键命令以及安全文本不会被压缩或省略。
+
 ## 为什么需要它
 
 AI Coding Agent 很有用，但在生产级仓库里常见的失败模式也很明确：

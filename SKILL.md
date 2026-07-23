@@ -1,6 +1,6 @@
 ---
 name: openspec-superpower-change
-description: "Use when a request may modify files or behavior, asks review-and-fix, changes skill/workflow/template files, needs OpenSpec or Direct Change classification or Superpowers routing, decides evidence-based final completion, or asks to archive and distill a session through Project Learning Closeout; also trigger on 开发变更、变更准入、OpenSpec、Review并修复、实施闭环、归档并蒸馏、Skill自演进. 可按用户要求输出 caveman 风格摘要，但不改治理约束。"
+description: "Use when a request may modify files or behavior, asks review-and-fix, changes skill/workflow/template files, needs OpenSpec or Direct Change classification or Superpowers routing, decides evidence-based final completion, or asks to archive and distill a session through Project Learning Closeout; also trigger on 开发变更、变更准入、OpenSpec、Review并修复、实施闭环、归档并蒸馏、Skill自演进、OpenSpec 精简模式、OpenSpec 正常模式. 可按用户要求输出 caveman 风格摘要，但不改治理约束。"
 ---
 
 # OpenSpec + Superpowers Change Gate
@@ -10,16 +10,37 @@ request, protects approval boundaries, selects implementation discipline, and
 owns final review and verification. It does not own standalone prompt wording
 or an already-handed-off external batch.
 
-## Token-lean / Caveman output mode
+## Governed Caveman Lite output mode
 
-`caveman` is **输出压缩层**，非治理机制。该层只优化表达密度，不改变任何
-路由/批准/证据/状态变更规则。
+The built-in `governed-caveman-lite` profile does not activate by default.
+Enable it with `OpenSpec 精简模式：<任务>`, or send `OpenSpec 精简模式` before the task.
+While active, use concise professional full sentences without filler, repetition, fragment-heavy prose, or unexplained abbreviations.
 
-- 触发：用户明确要求“少 token/更短/更精简/像 caveman 说”。
-- 允许：路由结论、Gate 0 摘要、发现列表、风险要点、验证命令说明。
-- 禁止：OpenSpec 提案正文、handoff/contracts、schema-1/2 evidence artifact 本体、
-  验收状态转移、final verification 结论、关键命令、敏感数据、最终闭环证据。
-- 对于治理 artifact，本地化输出可压缩为更短段落，但不得省略必填字段。
+It remains active for the current conversation until disabled or the conversation ends.
+Disable it with `OpenSpec 正常模式`.
+A new conversation starts in normal output mode and creates no account, repository, or runtime preference.
+The latest explicit OpenSpec mode command controls Router prose, so normal mode wins even after a prior Caveman-style instruction.
+
+It is presentation state only, never invokes or delegates to a separate `caveman` skill, and works when one is unavailable.
+It does not change routing, approval, evidence, Review, verification, completion, Git, or publication authority.
+
+Compression may shorten ordinary summaries only. Protected content remains structurally complete:
+
+- Gate 0 and mandatory governance/approval fields;
+- OpenSpec artifacts and Superpowers implementation plans;
+- Handoff/evidence artifacts and canonical state transitions;
+- PASS/FAIL/BLOCKED, final verification, and final Review;
+- critical commands, rollback instructions, security warnings, destructive confirmations, and sensitive-data handling.
+
+Governance output keeps every required field and ordering constraint present; governance clarity and safety override compression.
+
+## Legacy request-scoped output compatibility
+
+The legacy requests `少 token/更短/更精简/像 caveman 说` and the entry wording `caveman 风格摘要` still request request-scoped compression.
+This applies only to the current request.
+It does not activate or persist `governed-caveman-lite`.
+Only `OpenSpec 精简模式` activates the named conversation profile.
+Legacy brevity remains subject to the same protected-surface rules defined above; it cannot omit governance or safety content.
 
 ## Mandatory Entry Gate
 

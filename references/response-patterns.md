@@ -60,6 +60,37 @@ outline when it is more than a non-behavioral micro edit.
   - 将 `PASS`/`FAIL`/`BLOCKED` 的语义替换为模糊描述
   - 用 caveman 语气替代 OpenSpec、handoff 或 final-review 的结构化文本
 
+### Legacy request-scoped brevity
+
+Requests for `少 token/更短/更精简/像 caveman 说` enable request-scoped compression for the current request.
+This does not activate or persist `governed-caveman-lite`.
+Only `OpenSpec 精简模式` activates the named conversation profile.
+Legacy brevity remains subject to the same protected-surface rules below; it cannot omit governance or safety content.
+
+### Governed Caveman Lite
+
+The built-in `governed-caveman-lite` profile does not activate by default.
+Enable it with `OpenSpec 精简模式：<任务>`, or send `OpenSpec 精简模式` before the task.
+While active, use concise professional full sentences without filler, repetition, fragment-heavy prose, or unexplained abbreviations.
+
+It remains active for the current conversation until disabled or the conversation ends.
+Disable it with `OpenSpec 正常模式`.
+A new conversation starts in normal output mode and creates no account, repository, or runtime preference.
+The latest explicit OpenSpec mode command controls Router prose, so normal mode wins even after a prior Caveman-style instruction.
+
+It is presentation state only, never invokes or delegates to a separate `caveman` skill, and works when one is unavailable.
+It does not change routing, approval, evidence, Review, verification, completion, Git, or publication authority.
+
+Compression may shorten ordinary response prose only. Protected content remains structurally complete:
+
+- Gate 0 and every mandatory governance-step or approval field;
+- OpenSpec artifacts and Superpowers implementation plans;
+- Handoff/evidence artifacts and canonical state transitions;
+- PASS/FAIL/BLOCKED, final verification, and final Review;
+- critical commands, rollback instructions, security warnings, destructive confirmations, and sensitive-data handling.
+
+Governance output keeps every required field and ordering constraint present; governance clarity and safety override compression.
+
 ## Gate 0 pattern
 
 Use before any state-changing action:

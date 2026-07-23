@@ -27,6 +27,18 @@ The goal is simple: an AI agent should not move from a request directly to imple
 - Turns costly corrections and Review findings into durable project knowledge
   and regression enforcement before final completion.
 
+## Governed Caveman Lite
+
+The built-in, default-off `governed-caveman-lite` profile makes ordinary Router
+prose concise while keeping professional full sentences. Enable it for the
+current conversation with `OpenSpec 精简模式：<任务>` (or send `OpenSpec 精简模式`
+before the task), and disable it with `OpenSpec 正常模式`.
+
+The profile changes presentation only. It does not require an external Caveman
+skill, does not persist beyond the current conversation, and never compresses
+away governance fields, approvals, evidence, critical commands, or security and
+safety text.
+
 ## Why It Exists
 
 AI coding agents can be effective, but in production-grade repositories they commonly fail in ways that are preventable:
